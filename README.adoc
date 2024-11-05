@@ -58,7 +58,7 @@ Unit tests are executed with two real Telegram bots, and require passing the bot
 mvn clean install \
     -Dsling.firstBotToken=HIDDEN_TOKEN \
     -Dsling.secondBotToken=HIDDEN_TOKEN \
-    -Dsling.chatID=1214316050
+    -Dsling.chatID=HIDDEN_CHAT_ID
 ....
 
 == License
