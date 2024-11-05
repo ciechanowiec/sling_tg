@@ -1,0 +1,71 @@
+[.text-justify]
+= Sling TG
+:reproducible:
+:doctype: article
+:author: Herman Ciechanowiec
+:email: herman@ciechanowiec.eu
+:chapter-signifier:
+:sectnums:
+:sectnumlevels: 5
+:sectanchors:
+:toc: left
+:toclevels: 5
+:icons: font
+// Docinfo is used for foldable TOC.
+// -> For full usage example see https://github.com/remkop/picocli
+:docinfo: shared,private
+:linkcss:
+:stylesdir: https://www.ciechanowiec.eu/linux_mantra/
+:stylesheet: adoc-css-style.css
+
+== Overview
+
+_Sling TG_ is a web framework for managing https://telegram.org/[Telegram] bots. It encapsulates technical interactions with the bots so that the user of the framework needs to implement only the business logic.
+
+== Details
+=== Boilerplate Code and Persistence Logic
+
+https://core.telegram.org/bots/api[Telegram Bot API] is complex. To use it, a Telegram bot owner usually needs to develop substantial amount of non-business related code, e.g. for registering the bot and for extracting data from updates. Often that code is repeatable and should be tediously reiterated for each new bot.
+
+Another important aspect of Telegram bot development is persistence of bot's activity. Telegram Bot API is generally stateless. This means that the Telegram bot owner needs to store the bot's activity in an external database and that persistence logic needs to be implemented by the bot owner fully from scratch.
+
+_Sling TG_ addresses both of the mentioned issues. It provides the user of the framework with abstractions that encapsulate in a generic way non-business related code for usage of Telegram Bot API and data persistence. Thanks to that the user of _Sling TG_ needs to implement only the business logic and deliver required bot configurations.
+
+=== Usage Examples
+Unit tests show complete examples of using _Sling TG_ framework, including bot configuration, persistence of updates and sending messages.
+
+=== Maven Coordinates
+_Sling TG_ coordinates in Maven Central Repository are the following:
+
+[source, xml]
+----
+<dependency>
+    <groupId>eu.ciechanowiec</groupId>
+    <artifactId>sling.rocket.telegram</artifactId>
+    <version>1.0.0</version>
+</dependency>
+----
+
+=== Sling Rocket
+_Sling TG_ is based on the https://github.com/ciechanowiec/sling_rocket[Sling Rocket] web framework and can be used exclusively within that framework.
+
+=== Secrets
+
+Unit tests are run against two real Telegram bots and require passing secrets of those bots as system properties: `sling.firstBotToken`, `sling.secondBotToken` and `sling.chatID`. Among others, this can be done as follows:
+
+[source,bash]
+....
+mvn clean install \
+    -Dsling.firstBotToken=HIDDEN_TOKEN \
+    -Dsling.secondBotToken=HIDDEN_TOKEN \
+    -Dsling.chatID=1214316050
+....
+
+== License
+The program is subject to MIT No Attribution License
+
+Copyright © 2024 Herman Ciechanowiec
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so.
+
+The Software is provided 'as is', without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the Software or the use or other dealings in the Software.
