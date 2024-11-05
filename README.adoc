@@ -20,19 +20,19 @@
 
 == Overview
 
-_Sling TG_ is a web framework for managing https://telegram.org/[Telegram] bots. It encapsulates technical interactions with the bots so that the user of the framework needs to implement only the business logic.
+_Sling TG_ is a web framework for managing https://telegram.org/[Telegram] bots. It encapsulates technical interactions with the bots so that the user of the framework can focus solely on implementing business logic for their bots.
 
 == Details
 === Boilerplate Code and Persistence Logic
 
-https://core.telegram.org/bots/api[Telegram Bot API] is complex. To use it, a Telegram bot owner usually needs to develop substantial amount of non-business related code, e.g. for registering the bot and for extracting data from updates. Often that code is repeatable and should be tediously reiterated for each new bot.
+The https://core.telegram.org/bots/api[Telegram Bot API] can be complex. Using it often requires Telegram bot owners to develop a significant amount of non-business-related code, such as for bot registration and data extraction from updates. This code is often repetitive and requires substantial effort to replicate for each new bot.
 
-Another important aspect of Telegram bot development is persistence of bot's activity. Telegram Bot API is generally stateless. This means that the Telegram bot owner needs to store the bot's activity in an external database and that persistence logic needs to be implemented by the bot owner fully from scratch.
+Another essential aspect of Telegram bot development is persisting bot activity. The Telegram Bot API is stateless, meaning bot owners must store bot activities in an external database, requiring them to implement persistence logic from scratch.
 
-_Sling TG_ addresses both of the mentioned issues. It provides the user of the framework with abstractions that encapsulate in a generic way non-business related code for usage of Telegram Bot API and data persistence. Thanks to that the user of _Sling TG_ needs to implement only the business logic and deliver required bot configurations.
+_Sling TG_ addresses these challenges by providing abstractions that encapsulate non-business-related code, offering a standardized approach to interacting with the Telegram Bot API and managing data persistence. This way, users of _Sling TG_ need only implement their business logic and provide the required bot configurations.
 
 === Usage Examples
-Unit tests show complete examples of using _Sling TG_ framework, including bot configuration, persistence of updates and sending messages.
+The framework's unit tests contain complete examples illustrating how to use _Sling TG_, i.a. how to configure a bot, persist updates, and send messages.
 
 === Maven Coordinates
 _Sling TG_ coordinates in Maven Central Repository are the following:
@@ -47,11 +47,11 @@ _Sling TG_ coordinates in Maven Central Repository are the following:
 ----
 
 === Sling Rocket
-_Sling TG_ is based on the https://github.com/ciechanowiec/sling_rocket[Sling Rocket] web framework and can be used exclusively within that framework.
+_Sling TG_ is built on the https://github.com/ciechanowiec/sling_rocket[Sling Rocket] web framework and is designed to be used exclusively within that environment.
 
 === Secrets
 
-Unit tests are run against two real Telegram bots and require passing secrets of those bots as system properties: `sling.firstBotToken`, `sling.secondBotToken` and `sling.chatID`. Among others, this can be done as follows:
+Unit tests are executed with two real Telegram bots, and require passing the bot tokens and chat ID as system properties: `sling.firstBotToken`, `sling.secondBotToken`, and `sling.chatID`. You can set these properties as follows:
 
 [source,bash]
 ....
