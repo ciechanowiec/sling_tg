@@ -21,7 +21,7 @@ public @interface TGBotConfig {
             name = "Bot Token",
             description = "Bot token issued by Telegram",
             defaultValue = StringUtils.EMPTY,
-            type = AttributeType.STRING
+            type = AttributeType.PASSWORD
     )
     String token() default StringUtils.EMPTY;
 
