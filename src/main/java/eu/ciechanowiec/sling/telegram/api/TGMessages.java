@@ -3,6 +3,7 @@ package eu.ciechanowiec.sling.telegram.api;
 import lombok.Getter;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import javax.jcr.Repository;
 import java.util.Comparator;
 import java.util.List;
 
@@ -42,11 +43,25 @@ public interface TGMessages {
     }
 
     /**
-     * Persists a new {@link TGMessage} in the collection represented by this {@link TGMessages}.
-     * @param tgMessageToPersist {@link TGMessage} that should be persisted
+     * Persists in the {@link Repository} and stores in
+     * the collection represented by this {@link TGMessages} a new {@link TGMessage}.
+     * @param tgMessageToPersist {@link TGMessage} that should be persisted and stored
      * @return persisted {@link TGMessage}
      */
-    TGMessage persistNew(TGMessage tgMessageToPersist);
+    default TGMessage persistNew(TGMessage tgMessageToPersist) {
+        return persistNew(tgMessageToPersist, true);
+    }
+
+    /**
+     * Persists in the {@link Repository} and stores in
+     * the collection represented by this {@link TGMessages} a new {@link TGMessage}.
+     * @param tgMessageToPersist {@link TGMessage} that should be persisted and stored
+     * @param doPersistBinaries if {@code true}, the binaries from the passed {@link TGMessage} will be persisted in
+     *                          the {@link Repository}; if {@code false}, the binaries will not be persisted and
+     *                          the passed {@link TGMessage} will be persisted without them
+     * @return persisted {@link TGMessage}
+     */
+    TGMessage persistNew(TGMessage tgMessageToPersist, boolean doPersistBinaries);
 
     /**
      * Retrieves all {@link TGMessage} instances from this {@link TGMessages} instance.

@@ -32,10 +32,10 @@ public interface TGCommands {
     TGCommand of(String searchedLiteral, boolean onlyListable);
 
     /**
-     * Retrieves all {@link TGCommand} instances from this {@link TGDocuments} instance.
+     * Retrieves all {@link TGCommand} instances from this {@link TGCommands} instance.
      * @param onlyListable {@code true} if only listable {@link TGCommand} instances should be considered;
      *        {@code false} otherwise
-     * @return all {@link TGCommand} instances from this {@link TGDocuments} instance
+     * @return all {@link TGCommand} instances from this {@link TGCommands} instance
      */
     Collection<TGCommand> all(boolean onlyListable);
 }

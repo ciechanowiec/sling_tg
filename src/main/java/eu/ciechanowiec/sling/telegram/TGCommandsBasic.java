@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 @Component(
         service = {TGCommands.class, TGCommandsBasic.class},
         immediate = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL
+        configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 @Slf4j
 @ToString

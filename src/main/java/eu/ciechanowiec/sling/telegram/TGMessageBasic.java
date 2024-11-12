@@ -28,9 +28,9 @@ class TGMessageBasic implements TGMessage {
     @ToString.Exclude
     private final ResourceAccess resourceAccess;
     @ToString.Exclude
-    private final Supplier<TGDocuments> tgDocumentsSupplier;
+    private final Supplier<TGAssets<TGDocument>> tgDocumentsSupplier;
     @ToString.Exclude
-    private final Supplier<TGPhotos> tgPhotosSupplier;
+    private final Supplier<TGAssets<TGPhoto>> tgPhotosSupplier;
     @ToString.Exclude
     private final Supplier<TGActor> tgActorSupplier;
     @ToString.Exclude
@@ -44,9 +44,9 @@ class TGMessageBasic implements TGMessage {
     @ToString.Exclude
     private final Supplier<TGCommand> tgCommandSupplier;
     @ToString.Exclude
-    private final Supplier<TGVideos> tgVideosSupplier;
+    private final Supplier<TGAssets<TGVideo>> tgVideosSupplier;
     @ToString.Exclude
-    private final Supplier<TGAudios> tgAudiosSupplier;
+    private final Supplier<TGAssets<TGAudio>> tgAudiosSupplier;
 
     @SuppressWarnings("OverlyCoupledMethod")
     TGMessageBasic(WithOriginalUpdate withOriginalUpdate, TGBot tgBot, ResourceAccess resourceAccess) {
@@ -67,11 +67,11 @@ class TGMessageBasic implements TGMessage {
     @SuppressWarnings("VariableDeclarationUsageDistance")
     TGMessageBasic(JCRPath jcrPath, ResourceAccess resourceAccess) {
         this.resourceAccess = resourceAccess;
-        JCRPath tgDocumentsJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGDocuments.DOCUMENTS_NODE_NAME);
-        JCRPath tgPhotosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGPhotos.PHOTOS_NODE_NAME);
+        JCRPath tgDocumentsJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.DOCUMENTS_NODE_NAME);
+        JCRPath tgPhotosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.PHOTOS_NODE_NAME);
         JCRPath tgActorJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGActor.ACTOR_NODE_NAME);
-        JCRPath tgVideosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGVideos.VIDEOS_NODE_NAME);
-        JCRPath tgAudiosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAudios.AUDIOS_NODE_NAME);
+        JCRPath tgVideosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.VIDEOS_NODE_NAME);
+        JCRPath tgAudiosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.AUDIOS_NODE_NAME);
         this.tgDocumentsSupplier = () -> new TGDocumentsBasic(tgDocumentsJCRPath, resourceAccess);
         this.tgPhotosSupplier = () -> new TGPhotosBasic(tgPhotosJCRPath, resourceAccess);
         this.tgActorSupplier = () -> new TGActorBasic(tgActorJCRPath, resourceAccess);
@@ -85,23 +85,38 @@ class TGMessageBasic implements TGMessage {
         log.trace("Initialized {}", this);
     }
 
+    TGMessageBasic(TGMessageNoBinariesPersistence tgMessageNoBinariesPersistence, ResourceAccess resourceAccess) {
+        this.resourceAccess = resourceAccess;
+        this.tgDocumentsSupplier = tgMessageNoBinariesPersistence::tgDocuments;
+        this.tgPhotosSupplier = tgMessageNoBinariesPersistence::tgPhotos;
+        this.tgActorSupplier = tgMessageNoBinariesPersistence::tgActor;
+        this.tgTextSupplier = tgMessageNoBinariesPersistence::tgText;
+        this.tgMessageIDSupplier = tgMessageNoBinariesPersistence::tgMessageID;
+        this.tgSendingDateSupplier = tgMessageNoBinariesPersistence::tgSendingDate;
+        this.tgActivationStatusSupplier = tgMessageNoBinariesPersistence::tgActivationStatus;
+        this.tgCommandSupplier = tgMessageNoBinariesPersistence::tgCommand;
+        this.tgVideosSupplier = tgMessageNoBinariesPersistence::tgVideos;
+        this.tgAudiosSupplier = tgMessageNoBinariesPersistence::tgAudios;
+        log.trace("Initialized {}", this);
+    }
+
     @Override
-    public TGDocuments tgDocuments() {
+    public TGAssets<TGDocument> tgDocuments() {
         return tgDocumentsSupplier.get();
     }
 
     @Override
-    public TGPhotos tgPhotos() {
+    public TGAssets<TGPhoto> tgPhotos() {
         return tgPhotosSupplier.get();
     }
 
     @Override
-    public TGVideos tgVideos() {
+    public TGAssets<TGVideo> tgVideos() {
         return tgVideosSupplier.get();
     }
 
     @Override
-    public TGAudios tgAudios() {
+    public TGAssets<TGAudio> tgAudios() {
         return tgAudiosSupplier.get();
     }
 
@@ -148,12 +163,12 @@ class TGMessageBasic implements TGMessage {
             );
             log.trace("Ensured {}", message);
         }
-        TGDocuments savedDocuments = tgDocuments().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGDocuments.DOCUMENTS_NODE_NAME
+        TGAssets<TGDocument> savedDocuments = tgDocuments().save(new TargetJCRPath(
+                new ParentJCRPath(targetJCRPath), TGAssets.DOCUMENTS_NODE_NAME
         ));
         log.trace("Saved {} for the message at {}", savedDocuments, targetJCRPath);
-        TGPhotos savedPhotos = tgPhotos().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGPhotos.PHOTOS_NODE_NAME
+        TGAssets<TGPhoto> savedPhotos = tgPhotos().save(new TargetJCRPath(
+                new ParentJCRPath(targetJCRPath), TGAssets.PHOTOS_NODE_NAME
         ));
         log.trace("Saved {} for the message at {}", savedPhotos, targetJCRPath);
         TGActor savedActor = tgActor().save(new TargetJCRPath(
@@ -168,12 +183,12 @@ class TGMessageBasic implements TGMessage {
         log.trace("Saved {} for the message at {}", savedSendingDate, targetJCRPath);
         TGActivationStatus savedTGActivationStatus = tgActivationStatus().save(new ParentJCRPath(targetJCRPath));
         log.trace("Saved {} for the message at {}", savedTGActivationStatus, targetJCRPath);
-        TGVideos savedVideos = tgVideos().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGVideos.VIDEOS_NODE_NAME
+        TGAssets<TGVideo> savedVideos = tgVideos().save(new TargetJCRPath(
+                new ParentJCRPath(targetJCRPath), TGAssets.VIDEOS_NODE_NAME
         ));
         log.trace("Saved {} for the message at {}", savedVideos, targetJCRPath);
-        TGAudios savedAudios = tgAudios().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGAudios.AUDIOS_NODE_NAME
+        TGAssets<TGAudio> savedAudios = tgAudios().save(new TargetJCRPath(
+                new ParentJCRPath(targetJCRPath), TGAssets.AUDIOS_NODE_NAME
         ));
         log.trace("Saved {} for the message at {}", savedAudios, targetJCRPath);
         return new TGMessageBasic(targetJCRPath, resourceAccess);

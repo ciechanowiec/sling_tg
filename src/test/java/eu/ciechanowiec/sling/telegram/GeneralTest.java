@@ -1,5 +1,6 @@
 package eu.ciechanowiec.sling.telegram;
 
+import eu.ciechanowiec.conditional.Conditional;
 import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
@@ -75,10 +76,19 @@ class GeneralTest extends TestEnvironment {
             context.registerInjectActivateService(TGCommandsBasic.class, commandsConfig);
         }
         TGUpdatesRegistrarBasic updatesRegistrar = context.registerInjectActivateService(TGUpdatesRegistrarBasic.class);
-        TGRootUpdatesReceiver tgRootUpdatesReceiver = tgUpdate -> {
-            TGUpdate tgUpdateRegistered = updatesRegistrar.register(tgUpdate);
-            log.debug("Registered {}", tgUpdateRegistered);
-        };
+        String withoutBinariesTag = "register-update-without-binaries";
+        TGRootUpdatesReceiver tgRootUpdatesReceiver = Optional.ofNullable(
+                Conditional.conditional(testInfo.getTags().contains(withoutBinariesTag))
+                           .onTrue(() -> (TGRootUpdatesReceiver) tgUpdate -> {
+                               TGUpdate tgUpdateRegistered = updatesRegistrar.register(tgUpdate, false);
+                               log.debug("Registered {}", tgUpdateRegistered);
+                           })
+                           .onFalse(() -> (TGRootUpdatesReceiver) tgUpdate -> {
+                               TGUpdate tgUpdateRegistered = updatesRegistrar.register(tgUpdate);
+                               log.debug("Registered {}", tgUpdateRegistered);
+                           })
+                           .get(TGRootUpdatesReceiver.class)
+        ).orElseThrow();
         context.registerService(TGRootUpdatesReceiver.class, tgRootUpdatesReceiver);
         context.registerInjectActivateService(TGBotRegistrarBasic.class);
         Map<String, String> firstBotProps = Map.of(
@@ -580,6 +590,52 @@ class GeneralTest extends TestEnvironment {
                                 .isPresent()
                 )
         );
+    }
+
+    @SneakyThrows
+    @Test
+    @Tag("register-update-without-binaries")
+    void registerUpdateWithoutBinaries() {
+        SendPhoto sendPhoto = new SendPhoto(chatID, new InputFile(loadResourceIntoFile("1.jpeg")));
+        SendDocument sendDocument = new SendDocument(
+                chatID, new InputFile(loadResourceIntoFile("documentus.pdf"))
+        );
+        SendVideo sendVideo = new SendVideo(
+                chatID, new InputFile(loadResourceIntoFile("morning.mp4"))
+        );
+        SendAudio sendAudio = new SendAudio(
+                chatID, new InputFile(loadResourceIntoFile("time-forward.mp3"))
+        );
+        Message sentPhoto = firstBot.tgIOGate().execute(sendPhoto);
+        Message sentDocument = firstBot.tgIOGate().execute(sendDocument);
+        Message sentVideo = firstBot.tgIOGate().execute(sendVideo);
+        Message sentAudio = firstBot.tgIOGate().execute(sendAudio);
+        Update updatePhoto = new Update();
+        updatePhoto.setMessage(sentPhoto);
+        Update updateDocument = new Update();
+        updateDocument.setMessage(sentDocument);
+        Update updateVideo = new Update();
+        updateVideo.setMessage(sentVideo);
+        Update updateAudio = new Update();
+        updateAudio.setMessage(sentAudio);
+        CompletableFuture<Void> updatesFutures = CompletableFuture.allOf(
+                firstBot.tgIOGate()
+                        .consumeAsync(List.of(updatePhoto, updateDocument, updateVideo, updateAudio))
+                        .toArray(new CompletableFuture[0])
+        );
+        updatesFutures.join();
+        List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
+                .tgMessages()
+                .all();
+        messages.forEach(
+                tgMessage -> {
+                    tgMessage.tgPhotos().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
+                    tgMessage.tgDocuments().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
+                    tgMessage.tgVideos().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
+                    tgMessage.tgAudios().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
+                }
+        );
+        assertEquals(4, messages.size());
     }
 
     @SneakyThrows

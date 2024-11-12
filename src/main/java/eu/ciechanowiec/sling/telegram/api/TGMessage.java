@@ -14,28 +14,28 @@ public interface TGMessage extends StagedNode<TGMessage> {
     TGActor tgActor();
 
     /**
-     * {@link TGDocuments} attached to this {@link TGMessage}.
-     * @return {@link TGDocuments} attached to this {@link TGMessage}
+     * {@link TGAssets} of type {@link TGDocument} attached to this {@link TGMessage}.
+     * @return {@link TGAssets} of type {@link TGDocument} attached to this {@link TGMessage}
      */
-    TGDocuments tgDocuments();
+    TGAssets<TGDocument> tgDocuments();
 
     /**
-     * {@link TGPhotos} attached to this {@link TGMessage}.
-     * @return {@link TGPhotos} attached to this {@link TGMessage}
+     * {@link TGAssets} of type {@link TGPhoto} attached to this {@link TGMessage}.
+     * @return {@link TGAssets} of type {@link TGPhoto} attached to this {@link TGMessage}
      */
-    TGPhotos tgPhotos();
+    TGAssets<TGPhoto> tgPhotos();
 
     /**
-     * {@link TGVideos} attached to this {@link TGMessage}.
-     * @return {@link TGVideos} attached to this {@link TGMessage}
+     * {@link TGAssets} of type {@link TGVideo} attached to this {@link TGMessage}.
+     * @return {@link TGAssets} of type {@link TGVideo} attached to this {@link TGMessage}
      */
-    TGVideos tgVideos();
+    TGAssets<TGVideo> tgVideos();
 
     /**
-     * {@link TGAudios} attached to this {@link TGMessage}.
-     * @return {@link TGAudios} attached to this {@link TGMessage}
+     * {@link TGAssets} of type {@link TGAudio} attached to this {@link TGMessage}.
+     * @return {@link TGAssets} of type {@link TGAudio} attached to this {@link TGMessage}
      */
-    TGAudios tgAudios();
+    TGAssets<TGAudio> tgAudios();
 
     /**
      * {@link TGText} of this {@link TGMessage}.

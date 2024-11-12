@@ -5,6 +5,7 @@ import eu.ciechanowiec.sling.rocket.asset.Assets;
 import eu.ciechanowiec.sling.rocket.asset.StagedAssetReal;
 import eu.ciechanowiec.sling.rocket.asset.StagedAssets;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
+import eu.ciechanowiec.sling.rocket.jcr.NodeProperties;
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
 import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
 
 @Slf4j
 @ToString
-class TGVideosBasic implements TGVideos {
+class TGVideosBasic implements TGAssets<TGVideo> {
 
     @ToString.Exclude
     private final ResourceAccess resourceAccess;
@@ -44,6 +45,11 @@ class TGVideosBasic implements TGVideos {
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             String jcrPathRaw = jcrPath.get();
             return Optional.ofNullable(resourceResolver.getResource(jcrPathRaw))
+                           .filter(
+                                   resource -> new NodeProperties(
+                                           new TargetJCRPath(resource), resourceAccess
+                                   ).isPrimaryType(Assets.NT_ASSETS)
+                           )
                            .map(resource -> new Assets(resource, resourceAccess))
                            .map(Assets::get)
                            .orElseGet(List::of)
@@ -69,7 +75,7 @@ class TGVideosBasic implements TGVideos {
 
     @Override
     @SuppressWarnings("PMD.UnnecessaryCast")
-    public TGVideos save(TargetJCRPath targetJCRPath) {
+    public TGAssets<TGVideo> save(TargetJCRPath targetJCRPath) {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
         List<StagedNode<Asset>> stagedAssetsRaw = all().stream().map(
