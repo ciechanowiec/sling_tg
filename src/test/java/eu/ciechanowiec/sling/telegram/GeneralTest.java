@@ -8,7 +8,6 @@ import eu.ciechanowiec.sling.rocket.test.TestEnvironment;
 import eu.ciechanowiec.sling.telegram.api.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -25,10 +24,6 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -265,7 +260,7 @@ class GeneralTest extends TestEnvironment {
                         tgPhoto.asset().orElseThrow().jcrUUID().isBlank()
                 ),
                 () -> assertTrue(
-                        new TGUpdateBasic(update, firstBot, resourceAccess)
+                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
                                 .tgPhotos()
                                 .all()
@@ -311,7 +306,7 @@ class GeneralTest extends TestEnvironment {
     @Test
     void updateWithNoChatID() {
         Update update = new Update();
-        TGChatID tgChatID = new TGUpdateBasic(update, firstBot, resourceAccess).tgChatID();
+        TGChatID tgChatID = new TGUpdateBasic(update, firstBot, fullResourceAccess).tgChatID();
         assertAll(
                 () -> assertEquals(TGChatIDBasic.UNKNOWN, tgChatID),
                 () -> assertEquals(NumberUtils.LONG_ZERO, tgChatID.asLong()),
@@ -326,7 +321,7 @@ class GeneralTest extends TestEnvironment {
         Message messageSent = firstBot.tgIOGate().execute(sendMessage);
         Update update = new Update();
         update.setMessage(messageSent);
-        TGChatID tgChatID = new TGUpdateBasic(update, firstBot, resourceAccess).tgChatID();
+        TGChatID tgChatID = new TGUpdateBasic(update, firstBot, fullResourceAccess).tgChatID();
         assertAll(
                 () -> assertEquals(Long.parseLong(chatID), tgChatID.asLong()),
                 () -> assertEquals(chatID, tgChatID.asString())
@@ -362,7 +357,7 @@ class GeneralTest extends TestEnvironment {
                         tgDocument.asset().orElseThrow().jcrUUID().isBlank()
                 ),
                 () -> assertTrue(
-                        new TGUpdateBasic(update, firstBot, resourceAccess)
+                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
                                 .tgDocuments()
                                 .all()
@@ -404,7 +399,7 @@ class GeneralTest extends TestEnvironment {
                         tgVideo.asset().orElseThrow().jcrUUID().isBlank()
                 ),
                 () -> assertTrue(
-                        new TGUpdateBasic(update, firstBot, resourceAccess)
+                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
                                 .tgVideos()
                                 .all()
@@ -446,7 +441,7 @@ class GeneralTest extends TestEnvironment {
                         tgAudio.asset().orElseThrow().jcrUUID().isBlank()
                 ),
                 () -> assertTrue(
-                        new TGUpdateBasic(update, firstBot, resourceAccess)
+                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
                                 .tgAudios()
                                 .all()
@@ -534,7 +529,9 @@ class GeneralTest extends TestEnvironment {
         Update firstUpdate = new Update();
         firstUpdate.setMessage(firstMessageSent);
         firstBot.tgIOGate().consumeAsync(firstUpdate).join();
-        TGCommand inMemoryCommand = new TGUpdateBasic(firstUpdate, firstBot, resourceAccess).tgMessage().tgCommand();
+        TGCommand inMemoryCommand = new TGUpdateBasic(
+                firstUpdate, firstBot, fullResourceAccess
+        ).tgMessage().tgCommand();
         TGCommand jcrCommand = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all()
@@ -557,7 +554,7 @@ class GeneralTest extends TestEnvironment {
         Message messageSent = firstBot.tgIOGate().execute(sendAudio);
         Update update = new Update();
         update.setMessage(messageSent);
-        TGUpdate tgUpdateBeforeRegistration = new TGUpdateBasic(update, firstBot, resourceAccess);
+        TGUpdate tgUpdateBeforeRegistration = new TGUpdateBasic(update, firstBot, fullResourceAccess);
         TGUpdatesRegistrar registrar = Optional.ofNullable(context.getService(TGUpdatesRegistrar.class)).orElseThrow();
         TGUpdate tgUpdateAfterRegistration = registrar.register(tgUpdateBeforeRegistration);
         assertAll(
@@ -636,24 +633,5 @@ class GeneralTest extends TestEnvironment {
                 }
         );
         assertEquals(4, messages.size());
-    }
-
-    @SneakyThrows
-    private File loadResourceIntoFile(String resourceName) {
-        File createdFile = File.createTempFile("jcr-binary_", ".tmp");
-        createdFile.deleteOnExit();
-        Path tempFilePath = createdFile.toPath();
-        Thread currentThread = Thread.currentThread();
-        ClassLoader classLoader = currentThread.getContextClassLoader();
-        try (
-                InputStream inputStream = Optional.ofNullable(
-                        classLoader.getResourceAsStream(resourceName)
-                ).orElseThrow();
-                OutputStream outputStream = Files.newOutputStream(tempFilePath)
-        ) {
-            IOUtils.copy(inputStream, outputStream);
-        }
-        assertTrue(createdFile.exists());
-        return createdFile;
     }
 }

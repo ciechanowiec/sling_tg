@@ -1,5 +1,6 @@
 package eu.ciechanowiec.sling.telegram;
 
+import eu.ciechanowiec.sling.rocket.commons.FullResourceAccess;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.telegram.api.*;
 import lombok.ToString;
@@ -22,22 +23,22 @@ import org.osgi.service.component.propertytypes.ServiceDescription;
 @ServiceDescription("Basic implementation of TGUpdatesRegistrar")
 public class TGUpdatesRegistrarBasic implements TGUpdatesRegistrar {
 
-    private final ResourceAccess resourceAccess;
+    private final FullResourceAccess fullResourceAccess;
     private final TGChats tgChats;
 
     /**
      * Constructs an instance of this class.
-     * @param resourceAccess {@link ResourceAccess} that will be used to acquire access to resources
+     * @param fullResourceAccess {@link ResourceAccess} that will be used to acquire access to resources
      * @param tgChats {@link TGChats} where {@link TGUpdate}s will be stored
      */
     @Activate
     public TGUpdatesRegistrarBasic(
             @Reference(cardinality = ReferenceCardinality.MANDATORY)
-            ResourceAccess resourceAccess,
+            FullResourceAccess fullResourceAccess,
             @Reference(cardinality = ReferenceCardinality.MANDATORY)
             TGChats tgChats
     ) {
-        this.resourceAccess = resourceAccess;
+        this.fullResourceAccess = fullResourceAccess;
         this.tgChats = tgChats;
         log.info("Initialized {}", this);
     }

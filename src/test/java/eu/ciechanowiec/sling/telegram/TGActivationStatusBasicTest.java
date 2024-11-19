@@ -19,7 +19,7 @@ class TGActivationStatusBasicTest extends TestEnvironment {
     @Test
     @SuppressWarnings("squid:S5778")
     void mustSave() {
-        TGActivationStatus inMemoryStatusActivated = new TGActivationStatusBasic(true, resourceAccess);
+        TGActivationStatus inMemoryStatusActivated = new TGActivationStatusBasic(true, fullResourceAccess);
         assertTrue(inMemoryStatusActivated.isActive());
         TGActivationStatus inMemoryStatusDeactivated = inMemoryStatusActivated.deactivate();
         assertFalse(inMemoryStatusDeactivated.isActive());
@@ -31,11 +31,11 @@ class TGActivationStatusBasicTest extends TestEnvironment {
         TGActivationStatus persistedStatus = inMemoryStatusReactivated.save(nodeJCRPath);
         assertAll(
                 () -> assertTrue(persistedStatus.isActive()),
-                () -> assertTrue(new TGActivationStatusBasic(nodeJCRPath, resourceAccess).isActive())
+                () -> assertTrue(new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).isActive())
         );
         assertThrows(
                 OccupiedJCRPathException.class,
-                () -> new TGActivationStatusBasic(nodeJCRPath, resourceAccess).save(nodeJCRPath)
+                () -> new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).save(nodeJCRPath)
         );
     }
 }

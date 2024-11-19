@@ -1,5 +1,6 @@
 package eu.ciechanowiec.sling.telegram;
 
+import eu.ciechanowiec.sling.rocket.commons.FullResourceAccess;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.telegram.api.*;
 import lombok.ToString;
@@ -26,24 +27,24 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
     private final TelegramBotsLongPollingApplication tgBotsApplication;
     private final TGRootUpdatesReceiver tgRootUpdatesReceiver;
     @ToString.Exclude
-    private final ResourceAccess resourceAccess;
+    private final FullResourceAccess fullResourceAccess;
 
     /**
      * Constructs an instance of this class.
      * @param tgRootUpdatesReceiver {@link TGRootUpdatesReceiver} that will receive {@link Update}-s from Telegram
      *                              as first
-     * @param resourceAccess {@link ResourceAccess} that will be used to acquire access to resources
+     * @param fullResourceAccess {@link ResourceAccess} that will be used to acquire access to resources
      */
     @Activate
     public TGBotRegistrarBasic(
             @Reference(cardinality = ReferenceCardinality.MANDATORY)
             TGRootUpdatesReceiver tgRootUpdatesReceiver,
             @Reference(cardinality = ReferenceCardinality.MANDATORY)
-            ResourceAccess resourceAccess
+            FullResourceAccess fullResourceAccess
     ) {
         this.tgRootUpdatesReceiver = tgRootUpdatesReceiver;
         this.tgBotsApplication = new TelegramBotsLongPollingApplication();
-        this.resourceAccess = resourceAccess;
+        this.fullResourceAccess = fullResourceAccess;
         log.info("Initialized {}", this);
     }
 
@@ -53,7 +54,7 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
         TGBotToken tgBotToken = tgBot.tgBotToken();
         String botTokenValue = tgBotToken.get();
         TGOutputGate tgOutputGate = new TGOutputGateBasic(tgBotToken);
-        TGInputGate tgInputGate = new TGInputGateBasic(tgRootUpdatesReceiver, tgBot, resourceAccess);
+        TGInputGate tgInputGate = new TGInputGateBasic(tgRootUpdatesReceiver, tgBot, fullResourceAccess);
         BotSession botSession = tgBotsApplication.registerBot(botTokenValue, tgInputGate);
         boolean isSessionRunning = botSession.isRunning();
         log.info("Registered {}. Is tgBot session running: {}", tgBot, isSessionRunning);
