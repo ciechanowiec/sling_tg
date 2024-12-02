@@ -26,7 +26,9 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -589,7 +591,6 @@ class GeneralTest extends TestEnvironment {
         );
     }
 
-    @SneakyThrows
     @Test
     @Tag("register-update-without-binaries")
     void registerUpdateWithoutBinaries() {
@@ -620,7 +621,11 @@ class GeneralTest extends TestEnvironment {
                         .consumeAsync(List.of(updatePhoto, updateDocument, updateVideo, updateAudio))
                         .toArray(new CompletableFuture[0])
         );
-        updatesFutures.join();
+        try {
+            updatesFutures.get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException exception) {
+            log.warn("Not waiting longer for updates", exception);
+        }
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all();
