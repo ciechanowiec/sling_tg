@@ -42,7 +42,7 @@ _Sling TG_ coordinates in Maven Central Repository are the following:
 <dependency>
     <groupId>eu.ciechanowiec</groupId>
     <artifactId>sling.rocket.telegram</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.6</version>
 </dependency>
 ----
 
