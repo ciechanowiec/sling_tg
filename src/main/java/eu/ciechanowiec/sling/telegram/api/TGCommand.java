@@ -8,6 +8,16 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 public interface TGCommand {
 
     /**
+     * Literal of the "/start" {@link TGCommand}.
+     */
+    String START_LITERAL = "/start";
+
+    /**
+     * Literal of the "/none" {@link TGCommand}.
+     */
+    String NONE_LITERAL = "/none";
+
+    /**
      * Text of the {@link TGCommand}.
      * @return text of the {@link TGCommand}
      */
@@ -34,9 +44,18 @@ public interface TGCommand {
     BotCommand botCommand();
 
     /**
-     * Answers whether the {@link TGCommand#literal()} method of this {@link TGCommand} produces "/start".
-     * @return {@code true} if the {@link TGCommand#literal()} method of this {@link TGCommand} produces "/start";
-     *         {@code false} otherwise
+     * Answers whether the {@link TGCommand#literal()} method of this {@link TGCommand}
+     * produces {@link TGCommand#START_LITERAL}.
+     * @return {@code true} if the {@link TGCommand#literal()} method of this {@link TGCommand} produces
+     *         {@link TGCommand#START_LITERAL}; {@code false} otherwise
      */
     boolean isStart();
+
+    /**
+     * Answers whether the {@link TGCommand#literal()} method of this {@link TGCommand}
+     * produces {@link TGCommand#NONE_LITERAL}.
+     * @return {@code true} if the {@link TGCommand#literal()} method of this {@link TGCommand} produces
+     *         {@link TGCommand#NONE_LITERAL}; {@code false} otherwise
+     */
+    boolean isNone();
 }

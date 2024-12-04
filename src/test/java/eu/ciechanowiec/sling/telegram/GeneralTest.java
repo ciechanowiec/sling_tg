@@ -298,10 +298,10 @@ class GeneralTest extends TestEnvironment {
                 () -> assertEquals(2, tgCommands.all(true).size()),
                 () -> assertEquals(2, tgCommands.setMyCommands(Locale.ENGLISH).orElseThrow().getCommands().size()),
                 () -> assertEquals(3, tgCommands.all(false).size()),
-                () -> assertEquals("/start", tgCommands.of("/start", true).literal()),
-                () -> assertEquals("/none", tgCommands.of("/hidden", true).literal()),
+                () -> assertEquals(TGCommand.START_LITERAL, tgCommands.of(TGCommand.START_LITERAL, true).literal()),
+                () -> assertEquals(TGCommand.NONE_LITERAL, tgCommands.of("/hidden", true).literal()),
                 () -> assertEquals("/hidden", tgCommands.of("/hidden", false).literal()),
-                () -> assertEquals("/none", tgCommands.of("/unknown", false).literal())
+                () -> assertEquals(TGCommand.NONE_LITERAL, tgCommands.of("/unknown", false).literal())
         );
     }
 
@@ -526,9 +526,8 @@ class GeneralTest extends TestEnvironment {
     @SneakyThrows
     @Test
     void command() {
-        String startLiteral = "/start";
         String hiddenLiteral = "/hidden";
-        SendMessage sendMessageStart = new SendMessage(chatID, startLiteral);
+        SendMessage sendMessageStart = new SendMessage(chatID, TGCommand.START_LITERAL);
         SendMessage sendMessageHidden = new SendMessage(chatID, hiddenLiteral);
         TGCommand hiddenCommand = Objects.requireNonNull(context.getService(TGCommands.class)).of(hiddenLiteral, false);
         Message messageStart = firstBot.tgIOGate().execute(sendMessageStart);
@@ -549,18 +548,20 @@ class GeneralTest extends TestEnvironment {
                 .tgMessages()
                 .all()
                 .stream()
-                .filter(tgMessage -> tgMessage.tgText().get().equals(startLiteral))
+                .filter(tgMessage -> tgMessage.tgText().get().equals(TGCommand.START_LITERAL))
                 .toList()
                 .getFirst()
                 .tgCommand();
         assertAll(
-                () -> assertEquals(startLiteral, startInMemoryCommand.literal()),
-                () -> assertEquals("/none", hiddenInMemoryCommand.literal()),
-                () -> assertEquals("/none", startJCRCommand.literal()),
+                () -> assertEquals(TGCommand.START_LITERAL, startInMemoryCommand.literal()),
+                () -> assertEquals(TGCommand.NONE_LITERAL, hiddenInMemoryCommand.literal()),
+                () -> assertEquals(TGCommand.NONE_LITERAL, startJCRCommand.literal()),
                 () -> assertEquals(hiddenLiteral, messageHidden.getText()),
                 () -> assertEquals(hiddenLiteral, hiddenCommand.literal()),
                 () -> assertTrue(startInMemoryCommand.isStart()),
-                () -> assertFalse(startJCRCommand.isStart())
+                () -> assertFalse(startJCRCommand.isStart()),
+                () -> assertFalse(startInMemoryCommand.isNone()),
+                () -> assertTrue(startJCRCommand.isNone())
         );
     }
 

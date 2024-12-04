@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
 record TGCommandBasic(String literal, String description, boolean isListable) implements TGCommand {
 
-    static final TGCommand NONE = new TGCommandBasic("/none", "No command", false);
+    static final TGCommand NONE = new TGCommandBasic(NONE_LITERAL, "No command", false);
 
     @Override
     public BotCommand botCommand() {
@@ -14,6 +14,11 @@ record TGCommandBasic(String literal, String description, boolean isListable) im
 
     @Override
     public boolean isStart() {
-        return literal.equals("/start");
+        return literal.equals(START_LITERAL);
+    }
+
+    @Override
+    public boolean isNone() {
+        return literal.equals(NONE_LITERAL);
     }
 }
