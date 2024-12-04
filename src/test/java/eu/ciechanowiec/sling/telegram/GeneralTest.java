@@ -229,6 +229,54 @@ class GeneralTest extends TestEnvironment {
                 .forEach(tgMessage -> assertFalse(tgMessage.tgActivationStatus().isActive()));
     }
 
+    @SneakyThrows
+    @Test
+    void onlyActiveRetrieval() {
+        SendMessage sendMessageA = new SendMessage(chatID, "First bot message A");
+        SendMessage sendMessageB = new SendMessage(chatID, "First bot message B");
+        Message messageASent = firstBot.tgIOGate().execute(sendMessageA);
+        TimeUnit.SECONDS.sleep(NumberUtils.INTEGER_ONE); // We need some distance between messages to sort them
+        Message messageBSent = firstBot.tgIOGate().execute(sendMessageB);
+        Update updateA = new Update();
+        Update updateB = new Update();
+        updateA.setMessage(messageASent);
+        updateB.setMessage(messageBSent);
+        CompletableFuture<Void> updatesFuturesPartOne = CompletableFuture.allOf(
+                firstBot.tgIOGate()
+                        .consumeAsync(List.of(updateA, updateB))
+                        .toArray(new CompletableFuture[0])
+        );
+        updatesFuturesPartOne.join();
+        TGMessages tgMessages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
+                .tgMessages();
+        assertEquals(2, tgMessages.all().size());
+        tgMessages.all().forEach(
+                tgMessage -> assertTrue(tgMessage.tgActivationStatus().isActive())
+        );
+        tgMessages.deactivateAll();
+        assertTrue(tgMessages.active().isEmpty());
+        SendMessage sendMessageC = new SendMessage(chatID, "First bot message C");
+        SendMessage sendMessageD = new SendMessage(chatID, "First bot message D");
+        Message messageCSent = firstBot.tgIOGate().execute(sendMessageC);
+        TimeUnit.SECONDS.sleep(NumberUtils.INTEGER_ONE); // We need some distance between messages to sort them
+        Message messageDSent = firstBot.tgIOGate().execute(sendMessageD);
+        Update updateC = new Update();
+        Update updateD = new Update();
+        updateC.setMessage(messageCSent);
+        updateD.setMessage(messageDSent);
+        CompletableFuture<Void> updatesFuturesPartTwo = CompletableFuture.allOf(
+                firstBot.tgIOGate()
+                        .consumeAsync(List.of(updateC, updateD))
+                        .toArray(new CompletableFuture[0])
+        );
+        updatesFuturesPartTwo.join();
+        assertAll(
+                () -> assertEquals(2, tgMessages.active().size()),
+                () -> assertEquals("First bot message C", tgMessages.active().getFirst().tgText().get()),
+                () -> assertEquals("First bot message D", tgMessages.active().get(1).tgText().get())
+        );
+    }
+
     @Test
     void photos() {
         SendPhoto sendPhoto = new SendPhoto(chatID, new InputFile(loadResourceIntoFile("1.jpeg")));

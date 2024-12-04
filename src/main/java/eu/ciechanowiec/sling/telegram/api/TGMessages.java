@@ -81,6 +81,16 @@ public interface TGMessages {
     List<TGMessage> all(ArrangeStrategy arrangeStrategy);
 
     /**
+     * Retrieves all active {@link TGMessage} instances from this {@link TGMessages} instance.
+     * An active {@link TGMessage} is a {@link TGMessage} whose {@link TGMessage#tgActivationStatus()}
+     * returns {@code true} when {@link TGActivationStatus#isActive()} is called.
+     * Messages are arranged with {@link ArrangeStrategy#BY_SENDING_DATE_ASC}.
+     * @return all {@link TGMessage} instances from this {@link TGMessages} instance
+     *         arranged with {@link ArrangeStrategy#BY_SENDING_DATE_ASC}
+     */
+    List<TGMessage> active();
+
+    /**
      * Deactivates all {@link TGMessage} instances from this {@link TGMessages} instance.
      */
     void deactivateAll();
