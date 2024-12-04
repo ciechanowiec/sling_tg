@@ -50,8 +50,11 @@ public interface TGMessage extends StagedNode<TGMessage> {
     TGMessageID tgMessageID();
 
     /**
-     * {@link TGCommand} passed with this {@link TGMessage}.
-     * @return {@link TGCommand} passed with this {@link TGMessage}
+     * Listable {@link TGCommand} passed with this {@link TGMessage}.
+     * <p>
+     * A listable {@link TGCommand} is a {@link TGCommand} that returns {@code true}
+     * when {@link TGCommand#isListable()} is called.
+     * @return listable {@link TGCommand} passed with this {@link TGMessage}
      */
     TGCommand tgCommand();
 

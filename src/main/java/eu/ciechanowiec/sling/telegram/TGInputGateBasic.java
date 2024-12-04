@@ -35,14 +35,14 @@ class TGInputGateBasic implements TGInputGate {
     @Override
     public void consume(List<Update> updates) {
         int numOfUpdates = updates.size();
-        log.debug("Received {} updates. Will pass them to async execution", numOfUpdates);
+        log.debug("Received {} update(s). Will pass them to async execution", numOfUpdates);
         consumeAsync(updates);
     }
 
     @Override
     public List<CompletableFuture<Void>> consumeAsync(List<Update> updates) {
         int numOfUpdates = updates.size();
-        log.debug("Received {} updates. Will pass them to async execution", numOfUpdates);
+        log.debug("Received {} update(s). Will pass them to async execution", numOfUpdates);
         return updates.stream()
                       .map(update -> CompletableFuture.runAsync(() -> consume(update)))
                       .toList();
