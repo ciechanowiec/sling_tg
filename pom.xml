@@ -12,7 +12,7 @@
 
     <groupId>eu.ciechanowiec</groupId>
     <artifactId>sling.rocket.telegram</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.8</version>
     <packaging>jar</packaging>
 
     <name>Sling TG</name>
