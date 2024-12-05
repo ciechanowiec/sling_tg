@@ -91,6 +91,14 @@ public interface TGMessages {
     List<TGMessage> active();
 
     /**
+     * Returns {@code true} if this {@link TGMessages} instance contains any {@link TGMessage} instances;
+     * returns {@code false} otherwise.
+     * @return {@code true} if this {@link TGMessages} instance contains any {@link TGMessage} instances;
+     *         {@code false} otherwise
+     */
+    boolean hasAny();
+
+    /**
      * Deactivates all {@link TGMessage} instances from this {@link TGMessages} instance.
      */
     void deactivateAll();

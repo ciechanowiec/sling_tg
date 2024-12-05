@@ -90,6 +90,17 @@ class TGMessagesBasic implements TGMessages {
     }
 
     @Override
+    public boolean hasAny() {
+        log.trace("Checking if {} has any messages", this);
+        try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
+            String jcrPathRaw = jcrPath.get();
+            return Optional.ofNullable(resourceResolver.getResource(jcrPathRaw))
+                    .map(Resource::hasChildren)
+                    .orElse(false);
+        }
+    }
+
+    @Override
     public void deactivateAll() {
         log.trace("Deactivating all messages for {}", this);
         all().stream().map(TGMessage::tgActivationStatus).forEach(TGActivationStatus::deactivate);

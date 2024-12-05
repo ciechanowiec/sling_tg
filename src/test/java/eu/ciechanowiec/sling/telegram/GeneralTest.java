@@ -164,7 +164,9 @@ class GeneralTest extends TestEnvironment {
                 () -> assertTrue(firstTGMessageID.asInt() > NumberUtils.INTEGER_ZERO),
                 () -> assertTrue(secondTGMessageID.asInt() > NumberUtils.INTEGER_ZERO),
                 () -> assertEquals(firstTGMessageID.asInt(), (int) firstTGMessageID.asLong()),
-                () -> assertEquals(firstTGMessageID.asInt(), Integer.parseInt(firstTGMessageID.asString()))
+                () -> assertEquals(firstTGMessageID.asInt(), Integer.parseInt(firstTGMessageID.asString())),
+                () -> assertTrue(firstTGMessages.hasAny()),
+                () -> assertTrue(secondTGMessages.hasAny())
         );
         Stream.concat(firstTGMessages.all().stream(), secondTGMessages.all().stream())
                 .forEach(
@@ -231,7 +233,11 @@ class GeneralTest extends TestEnvironment {
 
     @SneakyThrows
     @Test
+    @SuppressWarnings("PMD.NcssCount")
     void onlyActiveRetrieval() {
+        TGMessages tgMessages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
+                .tgMessages();
+        assertFalse(tgMessages.hasAny());
         SendMessage sendMessageA = new SendMessage(chatID, "First bot message A");
         SendMessage sendMessageB = new SendMessage(chatID, "First bot message B");
         Message messageASent = firstBot.tgIOGate().execute(sendMessageA);
@@ -247,8 +253,6 @@ class GeneralTest extends TestEnvironment {
                         .toArray(new CompletableFuture[0])
         );
         updatesFuturesPartOne.join();
-        TGMessages tgMessages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
-                .tgMessages();
         assertEquals(2, tgMessages.all().size());
         tgMessages.all().forEach(
                 tgMessage -> assertTrue(tgMessage.tgActivationStatus().isActive())
