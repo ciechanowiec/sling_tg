@@ -46,4 +46,9 @@ class TGChatBasic implements TGChat {
             return new TGMessagesBasic(messagesJCRPath, resourceAccess);
         }
     }
+
+    @Override
+    public JCRPath jcrPath() {
+        return jcrPath;
+    }
 }

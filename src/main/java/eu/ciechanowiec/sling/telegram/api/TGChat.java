@@ -1,12 +1,13 @@
 package eu.ciechanowiec.sling.telegram.api;
 
+import eu.ciechanowiec.sling.rocket.jcr.path.WithJCRPath;
+
 import javax.jcr.Node;
 
 /**
  * Chat in Telegram.
  */
-@FunctionalInterface
-public interface TGChat {
+public interface TGChat extends WithJCRPath {
 
     /**
      * Name of a {@link Node} where a {@link TGChat} is persisted.

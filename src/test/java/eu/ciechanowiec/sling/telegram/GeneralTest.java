@@ -617,6 +617,24 @@ class GeneralTest extends TestEnvironment {
         );
     }
 
+    @Test
+    void tgChatPath() {
+        TGChat firstTgChat = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot);
+        TGChat secondTgChat = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), secondBot);
+        assertAll(
+                () -> assertEquals(
+                        new TargetJCRPath(
+                                new ParentJCRPath(new TargetJCRPath("/content/telegram/chats/lukus")), chatID
+                        ), firstTgChat.jcrPath()
+                ),
+                () -> assertEquals(
+                        new TargetJCRPath(
+                                new ParentJCRPath(new TargetJCRPath("/content/telegram/chats/munus")), chatID
+                        ), secondTgChat.jcrPath()
+                )
+        );
+    }
+
     @SneakyThrows
     @Test
     void registerUpdate() {
