@@ -54,7 +54,7 @@ class TGDocumentsBasic implements TGAssets<TGDocument> {
                     .map(Assets::get)
                     .orElseGet(List::of)
                     .stream()
-                    .<TGDocument>map(TGDocumentBasic::new)
+                    .<TGDocument>map(TGAssetBasic::new)
                     .toList();
         }
     }
@@ -63,7 +63,7 @@ class TGDocumentsBasic implements TGAssets<TGDocument> {
         Update update = withOriginalUpdate.originalUpdate();
         return Optional.ofNullable(update.getMessage())
                 .flatMap(message -> Optional.ofNullable(message.getDocument()))
-                .<TGDocument>map(document -> new TGDocumentBasic(document, tgBot))
+                .<TGDocument>map(document -> new TGAssetBasic(document, tgBot))
                 .map(List::of)
                 .orElse(List.of());
     }
@@ -78,13 +78,15 @@ class TGDocumentsBasic implements TGAssets<TGDocument> {
     public TGAssets<TGDocument> save(TargetJCRPath targetJCRPath) {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
-        List<StagedNode<Asset>> stagedAssetsRaw = all().stream().map(
-                tgDocument -> {
-                    TGFile tgFile = tgDocument.tgFile();
-                    TGMetadata tgMetaData = tgDocument.tgMetadata();
-                    return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
-                }
-        ).toList();
+        List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
+                .filter(tgDocument -> tgDocument.tgFile().retrieve().isPresent())
+                .map(
+                        tgDocument -> {
+                            TGFile tgFile = tgDocument.tgFile();
+                            TGMetadata tgMetaData = tgDocument.tgMetadata();
+                            return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
+                        }
+                ).toList();
         Assets assets = new StagedAssets(stagedAssetsRaw, resourceAccess).save(targetJCRPath);
         log.trace("Saved {} to {}", assets, targetJCRPath);
         return new TGDocumentsBasic(targetJCRPath, resourceAccess);

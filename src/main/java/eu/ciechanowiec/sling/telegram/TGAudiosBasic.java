@@ -54,7 +54,7 @@ class TGAudiosBasic implements TGAssets<TGAudio> {
                            .map(Assets::get)
                            .orElseGet(List::of)
                            .stream()
-                           .<TGAudio>map(TGAudioBasic::new)
+                           .<TGAudio>map(TGAssetBasic::new)
                            .toList();
         }
     }
@@ -63,7 +63,7 @@ class TGAudiosBasic implements TGAssets<TGAudio> {
         Update update = withOriginalUpdate.originalUpdate();
         return Optional.ofNullable(update.getMessage())
                        .flatMap(message -> Optional.ofNullable(message.getAudio()))
-                       .<TGAudio>map(audio -> new TGAudioBasic(audio, tgBot))
+                       .<TGAudio>map(audio -> new TGAssetBasic(audio, tgBot))
                        .map(List::of)
                        .orElse(List.of());
     }
@@ -78,13 +78,15 @@ class TGAudiosBasic implements TGAssets<TGAudio> {
     public TGAssets<TGAudio> save(TargetJCRPath targetJCRPath) {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
-        List<StagedNode<Asset>> stagedAssetsRaw = all().stream().map(
-                tgVideo -> {
-                    TGFile tgFile = tgVideo.tgFile();
-                    TGMetadata tgMetaData = tgVideo.tgMetadata();
-                    return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
-                }
-        ).toList();
+        List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
+                .filter(tgAudio -> tgAudio.tgFile().retrieve().isPresent())
+                .map(
+                        tgAudio -> {
+                            TGFile tgFile = tgAudio.tgFile();
+                            TGMetadata tgMetaData = tgAudio.tgMetadata();
+                            return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
+                        }
+                ).toList();
         Assets assets = new StagedAssets(stagedAssetsRaw, resourceAccess).save(targetJCRPath);
         log.trace("Saved {} to {}", assets, targetJCRPath);
         return new TGAudiosBasic(targetJCRPath, resourceAccess);

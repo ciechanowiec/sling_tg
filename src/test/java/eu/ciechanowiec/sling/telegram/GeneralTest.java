@@ -8,6 +8,7 @@ import eu.ciechanowiec.sling.rocket.test.TestEnvironment;
 import eu.ciechanowiec.sling.telegram.api.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -382,22 +383,36 @@ class GeneralTest extends TestEnvironment {
         );
     }
 
+    @SneakyThrows
     @Test
+    @SuppressWarnings("MagicNumber")
     void documents() {
-        SendDocument sendDocument = new SendDocument(
+        int fileSizeMB = 22;
+        File tooBigFile = File.createTempFile("22MB_File", ".txt");
+        String content = "A".repeat(1024); // 1 KB of data
+        FileUtils.writeStringToFile(tooBigFile, content.repeat(fileSizeMB * 1024), "UTF-8");
+        SendDocument sendUsualDocument = new SendDocument(
                 chatID, new InputFile(loadResourceIntoFile("documentus.pdf"))
         );
-        Message messageSent = firstBot.tgIOGate().execute(sendDocument);
-        Update update = new Update();
-        update.setMessage(messageSent);
-        firstBot.tgIOGate().consumeAsync(update).join();
+        SendDocument sendTooBigDocument = new SendDocument(
+                chatID, new InputFile(tooBigFile)
+        );
+        Message usualMessageSent = firstBot.tgIOGate().execute(sendUsualDocument);
+        Message tooBigMessageSent = firstBot.tgIOGate().execute(sendTooBigDocument);
+        Update usualUpdate = new Update();
+        Update tooBigUpdate = new Update();
+        usualUpdate.setMessage(usualMessageSent);
+        tooBigUpdate.setMessage(tooBigMessageSent);
+        firstBot.tgIOGate().consumeAsync(usualUpdate).join();
+        firstBot.tgIOGate().consumeAsync(tooBigUpdate).join();
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all();
         TGDocument tgDocument = messages.getFirst().tgDocuments().all().stream().findFirst().orElseThrow();
         assertAll(
-                () -> assertEquals(1, messages.size()),
+                () -> assertEquals(2, messages.size()),
                 () -> assertEquals(1, messages.getFirst().tgDocuments().all().size()),
+                () -> assertTrue(messages.getLast().tgDocuments().all().isEmpty()),
                 () -> assertTrue(tgDocument.tgFile().retrieve().orElseThrow().exists()),
                 () -> assertTrue(tgDocument.tgMetadata().originalFileName().startsWith("jcr-binary_")),
                 () -> assertEquals("application/pdf", tgDocument.tgMetadata().mimeType()),
@@ -411,7 +426,7 @@ class GeneralTest extends TestEnvironment {
                         tgDocument.asset().orElseThrow().jcrUUID().isBlank()
                 ),
                 () -> assertTrue(
-                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
+                        new TGUpdateBasic(usualUpdate, firstBot, fullResourceAccess)
                                 .tgMessage()
                                 .tgDocuments()
                                 .all()

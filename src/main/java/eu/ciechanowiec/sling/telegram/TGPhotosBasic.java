@@ -1,9 +1,6 @@
 package eu.ciechanowiec.sling.telegram;
 
-import eu.ciechanowiec.sling.rocket.asset.Asset;
-import eu.ciechanowiec.sling.rocket.asset.Assets;
-import eu.ciechanowiec.sling.rocket.asset.StagedAssetReal;
-import eu.ciechanowiec.sling.rocket.asset.StagedAssets;
+import eu.ciechanowiec.sling.rocket.asset.*;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.rocket.jcr.NodeProperties;
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
@@ -54,7 +51,7 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
                            .map(Assets::get)
                            .orElseGet(List::of)
                            .stream()
-                           .<TGPhoto>map(TGPhotoBasic::new)
+                           .<TGPhoto>map(TGAssetBasic::new)
                            .toList();
         }
     }
@@ -64,7 +61,12 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         PhotosFromTGUpdate photosFromUpdate = new PhotosFromTGUpdate(withOriginalUpdate, tgIOGate);
         Collection<File> photosRetrieved = photosFromUpdate.retrieve(true);
         return photosRetrieved.stream()
-                              .<TGPhoto>map(TGPhotoBasic::new)
+                              .<TGPhoto>map(
+                                      file -> new TGAssetBasic(
+                                              () -> () -> Optional.of(file),
+                                              () -> new TGMetadataBasic(new FileMetadata(file))
+                                      )
+                              )
                               .toList();
     }
 
@@ -78,13 +80,15 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
     public TGAssets<TGPhoto> save(TargetJCRPath targetJCRPath) {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
-        List<StagedNode<Asset>> stagedAssetsRaw = all().stream().map(
-                tgPhoto -> {
-                    TGFile tgFile = tgPhoto.tgFile();
-                    TGMetadata tgMetaData = tgPhoto.tgMetadata();
-                    return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
-                }
-        ).toList();
+        List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
+                .filter(tgPhoto -> tgPhoto.tgFile().retrieve().isPresent())
+                .map(
+                        tgPhoto -> {
+                            TGFile tgFile = tgPhoto.tgFile();
+                            TGMetadata tgMetaData = tgPhoto.tgMetadata();
+                            return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
+                        }
+                ).toList();
         Assets assets = new StagedAssets(stagedAssetsRaw, resourceAccess).save(targetJCRPath);
         log.trace("Saved {} to {}", assets, targetJCRPath);
         return new TGPhotosBasic(targetJCRPath, resourceAccess);

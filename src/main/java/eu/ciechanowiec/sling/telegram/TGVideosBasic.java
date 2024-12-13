@@ -54,7 +54,7 @@ class TGVideosBasic implements TGAssets<TGVideo> {
                            .map(Assets::get)
                            .orElseGet(List::of)
                            .stream()
-                           .<TGVideo>map(TGVideoBasic::new)
+                           .<TGVideo>map(TGAssetBasic::new)
                            .toList();
         }
     }
@@ -63,7 +63,7 @@ class TGVideosBasic implements TGAssets<TGVideo> {
         Update update = withOriginalUpdate.originalUpdate();
         return Optional.ofNullable(update.getMessage())
                        .flatMap(message -> Optional.ofNullable(message.getVideo()))
-                       .<TGVideo>map(video -> new TGVideoBasic(video, tgBot))
+                       .<TGVideo>map(video -> new TGAssetBasic(video, tgBot))
                        .map(List::of)
                        .orElse(List.of());
     }
@@ -78,13 +78,15 @@ class TGVideosBasic implements TGAssets<TGVideo> {
     public TGAssets<TGVideo> save(TargetJCRPath targetJCRPath) {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
-        List<StagedNode<Asset>> stagedAssetsRaw = all().stream().map(
-                tgVideo -> {
-                    TGFile tgFile = tgVideo.tgFile();
-                    TGMetadata tgMetaData = tgVideo.tgMetadata();
-                    return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
-                }
-        ).toList();
+        List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
+                .filter(tgVideo -> tgVideo.tgFile().retrieve().isPresent())
+                .map(
+                        tgVideo -> {
+                            TGFile tgFile = tgVideo.tgFile();
+                            TGMetadata tgMetaData = tgVideo.tgMetadata();
+                            return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
+                        }
+                ).toList();
         Assets assets = new StagedAssets(stagedAssetsRaw, resourceAccess).save(targetJCRPath);
         log.trace("Saved {} to {}", assets, targetJCRPath);
         return new TGVideosBasic(targetJCRPath, resourceAccess);

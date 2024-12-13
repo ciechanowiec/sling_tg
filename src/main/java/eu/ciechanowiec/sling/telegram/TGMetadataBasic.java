@@ -45,6 +45,19 @@ class TGMetadataBasic implements TGMetadata {
         log.trace("Initialized {}", this);
     }
 
+    TGMetadataBasic(WithOriginalMetadata withOriginalMetadata, Supplier<String> fallbackMimeTypeSupplier) {
+        this.originalFileNameSupplier = () -> withOriginalMetadata.originalFileName().orElse(StringUtils.EMPTY);
+        this.mimeTypeSupplier = withOriginalMetadata.originalMimeType()
+                .map(mimeType -> (Supplier<String>) () -> mimeType)
+                .orElse(fallbackMimeTypeSupplier);
+        this.allSupplier = () -> Map.of(
+                PN_MIME_TYPE, mimeType(),
+                PN_ORIGINAL_FILE_NAME, originalFileName()
+        );
+        this.propertiesSupplier = Optional::empty;
+        log.trace("Initialized {}", this);
+    }
+
     TGMetadataBasic(Video video, Supplier<String> fallbackMimeTypeSupplier) {
         this.originalFileNameSupplier = () -> Optional.ofNullable(video.getFileName()).orElse(StringUtils.EMPTY);
         this.mimeTypeSupplier = Optional.ofNullable(video.getMimeType())
