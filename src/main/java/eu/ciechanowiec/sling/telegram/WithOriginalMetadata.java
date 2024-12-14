@@ -5,6 +5,7 @@ import eu.ciechanowiec.sling.rocket.unit.DataUnit;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Video;
+import org.telegram.telegrambots.meta.api.objects.Voice;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -38,6 +39,14 @@ class WithOriginalMetadata {
         this.originalMimeType = () -> Optional.ofNullable(video.getMimeType());
         this.originalFileName = () -> Optional.ofNullable(video.getFileName());
         this.originalDataSize = () -> Optional.ofNullable(video.getFileSize())
+                .map(size -> new DataSize(size, DataUnit.BYTES));
+    }
+
+    WithOriginalMetadata(Voice voice) {
+        this.fileID = voice::getFileId;
+        this.originalMimeType = () -> Optional.ofNullable(voice.getMimeType());
+        this.originalFileName = Optional::empty;
+        this.originalDataSize = () -> Optional.ofNullable(voice.getFileSize())
                 .map(size -> new DataSize(size, DataUnit.BYTES));
     }
 

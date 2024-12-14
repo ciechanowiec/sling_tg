@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @Slf4j
 @ToString
+@SuppressWarnings({"MultipleStringLiterals", "PMD.AvoidDuplicateLiterals"})
 class TGOutputGateBasic implements TGOutputGate {
 
     private final TelegramClient telegramClient;
@@ -64,6 +65,13 @@ class TGOutputGateBasic implements TGOutputGate {
     public Message execute(SendAudio sendAudio) {
         log.trace("Executing {}", sendAudio);
         return telegramClient.execute(sendAudio);
+    }
+
+    @SneakyThrows
+    @Override
+    public Message execute(SendVoice sendVoice) {
+        log.trace("Executing {}", sendVoice);
+        return telegramClient.execute(sendVoice);
     }
 
     @SneakyThrows

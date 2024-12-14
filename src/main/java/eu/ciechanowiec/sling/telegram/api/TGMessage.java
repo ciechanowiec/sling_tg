@@ -2,6 +2,8 @@ package eu.ciechanowiec.sling.telegram.api;
 
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
 
+import java.util.Optional;
+
 /**
  * Message in Telegram.
  */
@@ -14,28 +16,42 @@ public interface TGMessage extends StagedNode<TGMessage> {
     TGActor tgActor();
 
     /**
-     * {@link TGAssets} of type {@link TGDocument} attached to this {@link TGMessage}.
-     * @return {@link TGAssets} of type {@link TGDocument} attached to this {@link TGMessage}
-     */
-    TGAssets<TGDocument> tgDocuments();
-
-    /**
      * {@link TGAssets} of type {@link TGPhoto} attached to this {@link TGMessage}.
      * @return {@link TGAssets} of type {@link TGPhoto} attached to this {@link TGMessage}
      */
     TGAssets<TGPhoto> tgPhotos();
 
     /**
-     * {@link TGAssets} of type {@link TGVideo} attached to this {@link TGMessage}.
-     * @return {@link TGAssets} of type {@link TGVideo} attached to this {@link TGMessage}
+     * {@link Optional} with a {@link TGDocument} attached to this {@link TGMessage}.
+     * If there is no such {@link TGDocument}, an empty {@link Optional} is returned.
+     * @return {@link Optional} with a {@link TGDocument} attached to this {@link TGMessage};
+     *         if there is no such {@link TGDocument}, an empty {@link Optional} is returned
      */
-    TGAssets<TGVideo> tgVideos();
+    Optional<TGDocument> tgDocument();
 
     /**
-     * {@link TGAssets} of type {@link TGAudio} attached to this {@link TGMessage}.
-     * @return {@link TGAssets} of type {@link TGAudio} attached to this {@link TGMessage}
+     * {@link Optional} with a {@link TGVideo} attached to this {@link TGMessage}. If there is no such {@link TGVideo},
+     * an empty {@link Optional} is returned.
+     * @return {@link Optional} with a {@link TGVideo} attached to this {@link TGMessage};
+     *         if there is no such {@link TGVideo}, an empty {@link Optional} is returned
      */
-    TGAssets<TGAudio> tgAudios();
+    Optional<TGVideo> tgVideo();
+
+    /**
+     * {@link Optional} with a {@link TGVideo} attached to this {@link TGMessage}. If there is no such {@link TGAudio},
+     * an empty {@link Optional} is returned.
+     * @return {@link Optional} with a {@link TGAudio} attached to this {@link TGMessage};
+     *         if there is no such {@link TGAudio}, an empty {@link Optional} is returned
+     */
+    Optional<TGAudio> tgAudio();
+
+    /**
+     * {@link Optional} with a {@link TGVoice} attached to this {@link TGMessage}. If there is no such {@link TGVoice},
+     * an empty {@link Optional} is returned.
+     * @return {@link Optional} with a {@link TGVoice} attached to this {@link TGMessage};
+     *         if there is no such {@link TGVoice}, an empty {@link Optional} is returned
+     */
+    Optional<TGVoice> tgVoice();
 
     /**
      * {@link TGText} of this {@link TGMessage}.

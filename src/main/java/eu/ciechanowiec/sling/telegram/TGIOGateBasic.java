@@ -54,6 +54,11 @@ class TGIOGateBasic implements TGIOGate {
     }
 
     @Override
+    public Message execute(SendVoice sendVoice) {
+        return tgOutputGate.execute(sendVoice);
+    }
+
+    @Override
     public List<Message> execute(SendMediaGroup sendMediaGroup) {
         return tgOutputGate.execute(sendMediaGroup);
     }

@@ -58,6 +58,13 @@ public interface TGOutputGate {
     Message execute(SendAudio sendAudio);
 
     /**
+     * Proxy for {@link TelegramClient#execute(SendVoice)}
+     * @param sendVoice method to be executed
+     * @return {@link Message} instance returned by the executed {@link SendVoice}
+     */
+    Message execute(SendVoice sendVoice);
+
+    /**
      * Proxy for {@link TelegramClient#execute(SendMediaGroup)}
      * @param sendMediaGroup method to be executed
      * @return list of {@link Message} instances, where every {@link Message} contains

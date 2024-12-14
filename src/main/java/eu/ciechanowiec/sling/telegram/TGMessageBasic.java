@@ -1,5 +1,6 @@
 package eu.ciechanowiec.sling.telegram;
 
+import eu.ciechanowiec.sling.rocket.asset.ConditionalAsset;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
@@ -15,6 +16,7 @@ import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -27,8 +29,6 @@ class TGMessageBasic implements TGMessage {
 
     @ToString.Exclude
     private final ResourceAccess resourceAccess;
-    @ToString.Exclude
-    private final Supplier<TGAssets<TGDocument>> tgDocumentsSupplier;
     @ToString.Exclude
     private final Supplier<TGAssets<TGPhoto>> tgPhotosSupplier;
     @ToString.Exclude
@@ -44,14 +44,16 @@ class TGMessageBasic implements TGMessage {
     @ToString.Exclude
     private final Supplier<TGCommand> tgCommandSupplier;
     @ToString.Exclude
-    private final Supplier<TGAssets<TGVideo>> tgVideosSupplier;
+    private final Supplier<Optional<TGDocument>> tgDocumentSupplier;
     @ToString.Exclude
-    private final Supplier<TGAssets<TGAudio>> tgAudiosSupplier;
+    private final Supplier<Optional<TGVideo>> tgVideoSupplier;
+    @ToString.Exclude
+    private final Supplier<Optional<TGAudio>> tgAudioSupplier;
+    @ToString.Exclude
+    private final Supplier<Optional<TGVoice>> tgVoiceSupplier;
 
-    @SuppressWarnings("OverlyCoupledMethod")
     TGMessageBasic(WithOriginalUpdate withOriginalUpdate, TGBot tgBot, ResourceAccess resourceAccess) {
         this.resourceAccess = resourceAccess;
-        this.tgDocumentsSupplier = () -> new TGDocumentsBasic(withOriginalUpdate, tgBot, resourceAccess);
         this.tgPhotosSupplier = () -> new TGPhotosBasic(withOriginalUpdate, tgBot, resourceAccess);
         this.tgActorSupplier = () -> new TGActorBasic(withOriginalUpdate, resourceAccess);
         this.tgTextSupplier = () -> new TGTextBasic(withOriginalUpdate, resourceAccess);
@@ -59,20 +61,34 @@ class TGMessageBasic implements TGMessage {
         this.tgSendingDateSupplier = () -> new TGSendingDateBasic(withOriginalUpdate, resourceAccess);
         this.tgActivationStatusSupplier = () -> new TGActivationStatusBasic(true, resourceAccess);
         this.tgCommandSupplier = () -> tgBot.tgCommands().of(tgTextSupplier.get().get(), true);
-        this.tgVideosSupplier = () -> new TGVideosBasic(withOriginalUpdate, tgBot, resourceAccess);
-        this.tgAudiosSupplier = () -> new TGAudiosBasic(withOriginalUpdate, tgBot, resourceAccess);
+        this.tgDocumentSupplier = () -> Optional.ofNullable(withOriginalUpdate.originalUpdate().getMessage())
+                .flatMap(message -> Optional.ofNullable(message.getDocument()))
+                .map(WithOriginalMetadata::new)
+                .map(withOriginalMetadata -> new TGAssetBasic(withOriginalMetadata, tgBot));
+        this.tgVideoSupplier = () -> Optional.ofNullable(withOriginalUpdate.originalUpdate().getMessage())
+                .flatMap(message -> Optional.ofNullable(message.getVideo()))
+                .map(WithOriginalMetadata::new)
+                .map(withOriginalMetadata -> new TGAssetBasic(withOriginalMetadata, tgBot));
+        this.tgAudioSupplier = () -> Optional.ofNullable(withOriginalUpdate.originalUpdate().getMessage())
+                .flatMap(message -> Optional.ofNullable(message.getAudio()))
+                .map(WithOriginalMetadata::new)
+                .map(withOriginalMetadata -> new TGAssetBasic(withOriginalMetadata, tgBot));
+        this.tgVoiceSupplier = () -> Optional.ofNullable(withOriginalUpdate.originalUpdate().getMessage())
+                .flatMap(message -> Optional.ofNullable(message.getVoice()))
+                .map(WithOriginalMetadata::new)
+                .map(withOriginalMetadata -> new TGAssetBasic(withOriginalMetadata, tgBot));
         log.trace("Initialized {}", this);
     }
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     TGMessageBasic(JCRPath jcrPath, ResourceAccess resourceAccess) {
         this.resourceAccess = resourceAccess;
-        JCRPath tgDocumentsJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.DOCUMENTS_NODE_NAME);
         JCRPath tgPhotosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.PHOTOS_NODE_NAME);
         JCRPath tgActorJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGActor.ACTOR_NODE_NAME);
-        JCRPath tgVideosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.VIDEOS_NODE_NAME);
-        JCRPath tgAudiosJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAssets.AUDIOS_NODE_NAME);
-        this.tgDocumentsSupplier = () -> new TGDocumentsBasic(tgDocumentsJCRPath, resourceAccess);
+        JCRPath tgDocumentJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGDocument.DOCUMENT_NODE_NAME);
+        JCRPath tgVideoJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGVideo.VIDEO_NODE_NAME);
+        JCRPath tgAudioJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGAudio.AUDIO_NODE_NAME);
+        JCRPath tgVoiceJCRPath = new TargetJCRPath(new ParentJCRPath(jcrPath), TGVoice.VOICE_NODE_NAME);
         this.tgPhotosSupplier = () -> new TGPhotosBasic(tgPhotosJCRPath, resourceAccess);
         this.tgActorSupplier = () -> new TGActorBasic(tgActorJCRPath, resourceAccess);
         this.tgTextSupplier = () -> new TGTextBasic(jcrPath, resourceAccess);
@@ -80,29 +96,13 @@ class TGMessageBasic implements TGMessage {
         this.tgSendingDateSupplier = () -> new TGSendingDateBasic(jcrPath, resourceAccess);
         this.tgActivationStatusSupplier = () -> new TGActivationStatusBasic(jcrPath, resourceAccess);
         this.tgCommandSupplier = () -> TGCommandBasic.NONE;
-        this.tgVideosSupplier = () -> new TGVideosBasic(tgVideosJCRPath, resourceAccess);
-        this.tgAudiosSupplier = () -> new TGAudiosBasic(tgAudiosJCRPath, resourceAccess);
+        this.tgDocumentSupplier = () -> new ConditionalAsset(
+                tgDocumentJCRPath, resourceAccess
+        ).get().map(TGAssetBasic::new);
+        this.tgVideoSupplier = () -> new ConditionalAsset(tgVideoJCRPath, resourceAccess).get().map(TGAssetBasic::new);
+        this.tgAudioSupplier = () -> new ConditionalAsset(tgAudioJCRPath, resourceAccess).get().map(TGAssetBasic::new);
+        this.tgVoiceSupplier = () -> new ConditionalAsset(tgVoiceJCRPath, resourceAccess).get().map(TGAssetBasic::new);
         log.trace("Initialized {}", this);
-    }
-
-    TGMessageBasic(TGMessageNoBinariesPersistence tgMessageNoBinariesPersistence, ResourceAccess resourceAccess) {
-        this.resourceAccess = resourceAccess;
-        this.tgDocumentsSupplier = tgMessageNoBinariesPersistence::tgDocuments;
-        this.tgPhotosSupplier = tgMessageNoBinariesPersistence::tgPhotos;
-        this.tgActorSupplier = tgMessageNoBinariesPersistence::tgActor;
-        this.tgTextSupplier = tgMessageNoBinariesPersistence::tgText;
-        this.tgMessageIDSupplier = tgMessageNoBinariesPersistence::tgMessageID;
-        this.tgSendingDateSupplier = tgMessageNoBinariesPersistence::tgSendingDate;
-        this.tgActivationStatusSupplier = tgMessageNoBinariesPersistence::tgActivationStatus;
-        this.tgCommandSupplier = tgMessageNoBinariesPersistence::tgCommand;
-        this.tgVideosSupplier = tgMessageNoBinariesPersistence::tgVideos;
-        this.tgAudiosSupplier = tgMessageNoBinariesPersistence::tgAudios;
-        log.trace("Initialized {}", this);
-    }
-
-    @Override
-    public TGAssets<TGDocument> tgDocuments() {
-        return tgDocumentsSupplier.get();
     }
 
     @Override
@@ -111,13 +111,23 @@ class TGMessageBasic implements TGMessage {
     }
 
     @Override
-    public TGAssets<TGVideo> tgVideos() {
-        return tgVideosSupplier.get();
+    public Optional<TGDocument> tgDocument() {
+        return tgDocumentSupplier.get();
     }
 
     @Override
-    public TGAssets<TGAudio> tgAudios() {
-        return tgAudiosSupplier.get();
+    public Optional<TGVideo> tgVideo() {
+        return tgVideoSupplier.get();
+    }
+
+    @Override
+    public Optional<TGAudio> tgAudio() {
+        return tgAudioSupplier.get();
+    }
+
+    @Override
+    public Optional<TGVoice> tgVoice() {
+        return tgVoiceSupplier.get();
     }
 
     @Override
@@ -163,10 +173,6 @@ class TGMessageBasic implements TGMessage {
             );
             log.trace("Ensured {}", message);
         }
-        TGAssets<TGDocument> savedDocuments = tgDocuments().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGAssets.DOCUMENTS_NODE_NAME
-        ));
-        log.trace("Saved {} for the message at {}", savedDocuments, targetJCRPath);
         TGAssets<TGPhoto> savedPhotos = tgPhotos().save(new TargetJCRPath(
                 new ParentJCRPath(targetJCRPath), TGAssets.PHOTOS_NODE_NAME
         ));
@@ -183,14 +189,26 @@ class TGMessageBasic implements TGMessage {
         log.trace("Saved {} for the message at {}", savedSendingDate, targetJCRPath);
         TGActivationStatus savedTGActivationStatus = tgActivationStatus().save(new ParentJCRPath(targetJCRPath));
         log.trace("Saved {} for the message at {}", savedTGActivationStatus, targetJCRPath);
-        TGAssets<TGVideo> savedVideos = tgVideos().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGAssets.VIDEOS_NODE_NAME
-        ));
-        log.trace("Saved {} for the message at {}", savedVideos, targetJCRPath);
-        TGAssets<TGAudio> savedAudios = tgAudios().save(new TargetJCRPath(
-                new ParentJCRPath(targetJCRPath), TGAssets.AUDIOS_NODE_NAME
-        ));
-        log.trace("Saved {} for the message at {}", savedAudios, targetJCRPath);
+        tgDocument().map(tgDocument -> new SaveTGAsset(tgDocument, resourceAccess)).flatMap(
+                saveTGAsset -> saveTGAsset.save(
+                        new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGDocument.DOCUMENT_NODE_NAME)
+                )
+        ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
+        tgVideo().map(tgVideo -> new SaveTGAsset(tgVideo, resourceAccess)).flatMap(
+                saveTGAsset -> saveTGAsset.save(
+                        new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGVideo.VIDEO_NODE_NAME)
+                )
+        ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
+        tgAudio().map(tgAudio -> new SaveTGAsset(tgAudio, resourceAccess)).flatMap(
+                saveTGAsset -> saveTGAsset.save(
+                        new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGAudio.AUDIO_NODE_NAME)
+                )
+        ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
+        tgVoice().map(tgVoice -> new SaveTGAsset(tgVoice, resourceAccess)).flatMap(
+                saveTGAsset -> saveTGAsset.save(
+                        new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGVoice.VOICE_NODE_NAME)
+                )
+        ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
         return new TGMessageBasic(targetJCRPath, resourceAccess);
     }
 }

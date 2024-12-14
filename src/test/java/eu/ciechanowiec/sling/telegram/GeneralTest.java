@@ -1,6 +1,5 @@
 package eu.ciechanowiec.sling.telegram;
 
-import eu.ciechanowiec.conditional.Conditional;
 import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
@@ -27,9 +26,7 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -74,19 +71,10 @@ class GeneralTest extends TestEnvironment {
             context.registerInjectActivateService(TGCommandsBasic.class, commandsConfig);
         }
         TGUpdatesRegistrarBasic updatesRegistrar = context.registerInjectActivateService(TGUpdatesRegistrarBasic.class);
-        String withoutBinariesTag = "register-update-without-binaries";
-        TGRootUpdatesReceiver tgRootUpdatesReceiver = Optional.ofNullable(
-                Conditional.conditional(testInfo.getTags().contains(withoutBinariesTag))
-                           .onTrue(() -> (TGRootUpdatesReceiver) tgUpdate -> {
-                               TGUpdate tgUpdateRegistered = updatesRegistrar.register(tgUpdate, false);
-                               log.debug("Registered {}", tgUpdateRegistered);
-                           })
-                           .onFalse(() -> (TGRootUpdatesReceiver) tgUpdate -> {
+        TGRootUpdatesReceiver tgRootUpdatesReceiver = tgUpdate -> {
                                TGUpdate tgUpdateRegistered = updatesRegistrar.register(tgUpdate);
                                log.debug("Registered {}", tgUpdateRegistered);
-                           })
-                           .get(TGRootUpdatesReceiver.class)
-        ).orElseThrow();
+                           };
         context.registerService(TGRootUpdatesReceiver.class, tgRootUpdatesReceiver);
         context.registerInjectActivateService(TGBotRegistrarBasic.class);
         Map<String, String> firstBotProps = Map.of(
@@ -173,10 +161,10 @@ class GeneralTest extends TestEnvironment {
                 .forEach(
                         tgMessage ->
                                 assertAll(
-                                        () -> assertTrue(tgMessage.tgDocuments().all().isEmpty()),
+                                        () -> assertTrue(tgMessage.tgDocument().isEmpty()),
                                         () -> assertTrue(tgMessage.tgPhotos().all().isEmpty()),
-                                        () -> assertTrue(tgMessage.tgVideos().all().isEmpty()),
-                                        () -> assertTrue(tgMessage.tgAudios().all().isEmpty()),
+                                        () -> assertTrue(tgMessage.tgVideo().isEmpty()),
+                                        () -> assertTrue(tgMessage.tgAudio().isEmpty()),
                                         () -> assertTrue(tgMessage.tgActivationStatus().isActive()),
                                         () -> assertTrue(tgMessage.tgActor().isBot()),
                                         () -> assertFalse(tgMessage.tgActor().firstName().isEmpty()),
@@ -386,7 +374,7 @@ class GeneralTest extends TestEnvironment {
     @SneakyThrows
     @Test
     @SuppressWarnings("MagicNumber")
-    void documents() {
+    void document() {
         int fileSizeMB = 22;
         File tooBigFile = File.createTempFile("22MB_File", ".txt");
         String content = "A".repeat(1024); // 1 KB of data
@@ -408,11 +396,11 @@ class GeneralTest extends TestEnvironment {
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all();
-        TGDocument tgDocument = messages.getFirst().tgDocuments().all().stream().findFirst().orElseThrow();
+        TGDocument tgDocument = messages.getFirst().tgDocument().orElseThrow();
         assertAll(
                 () -> assertEquals(2, messages.size()),
-                () -> assertEquals(1, messages.getFirst().tgDocuments().all().size()),
-                () -> assertTrue(messages.getLast().tgDocuments().all().isEmpty()),
+                () -> assertTrue(messages.getFirst().tgDocument().isPresent()),
+                () -> assertTrue(messages.getLast().tgDocument().isEmpty()),
                 () -> assertTrue(tgDocument.tgFile().retrieve().orElseThrow().exists()),
                 () -> assertTrue(tgDocument.tgMetadata().originalFileName().startsWith("jcr-binary_")),
                 () -> assertEquals("application/pdf", tgDocument.tgMetadata().mimeType()),
@@ -428,10 +416,7 @@ class GeneralTest extends TestEnvironment {
                 () -> assertTrue(
                         new TGUpdateBasic(usualUpdate, firstBot, fullResourceAccess)
                                 .tgMessage()
-                                .tgDocuments()
-                                .all()
-                                .stream()
-                                .findFirst()
+                                .tgDocument()
                                 .orElseThrow()
                                 .asset()
                                 .isEmpty()
@@ -440,7 +425,7 @@ class GeneralTest extends TestEnvironment {
     }
 
     @Test
-    void videos() {
+    void video() {
         SendVideo sendVideo = new SendVideo(
                 chatID, new InputFile(loadResourceIntoFile("morning.mp4"))
         );
@@ -451,10 +436,10 @@ class GeneralTest extends TestEnvironment {
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all();
-        TGVideo tgVideo = messages.getFirst().tgVideos().all().stream().findFirst().orElseThrow();
+        TGVideo tgVideo = messages.getFirst().tgVideo().orElseThrow();
         assertAll(
                 () -> assertEquals(1, messages.size()),
-                () -> assertEquals(1, messages.getFirst().tgVideos().all().size()),
+                () -> assertTrue(messages.getFirst().tgVideo().isPresent()),
                 () -> assertTrue(tgVideo.tgFile().retrieve().orElseThrow().exists()),
                 () -> assertTrue(tgVideo.tgMetadata().originalFileName().startsWith("jcr-binary_")),
                 () -> assertEquals("video/mp4", tgVideo.tgMetadata().mimeType()),
@@ -470,10 +455,7 @@ class GeneralTest extends TestEnvironment {
                 () -> assertTrue(
                         new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
-                                .tgVideos()
-                                .all()
-                                .stream()
-                                .findFirst()
+                                .tgVideo()
                                 .orElseThrow()
                                 .asset()
                                 .isEmpty()
@@ -482,7 +464,7 @@ class GeneralTest extends TestEnvironment {
     }
 
     @Test
-    void audios() {
+    void audio() {
         SendAudio sendAudio = new SendAudio(
                 chatID, new InputFile(loadResourceIntoFile("time-forward.mp3"))
         );
@@ -493,10 +475,10 @@ class GeneralTest extends TestEnvironment {
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
                 .tgMessages()
                 .all();
-        TGAudio tgAudio = messages.getFirst().tgAudios().all().stream().findFirst().orElseThrow();
+        TGAudio tgAudio = messages.getFirst().tgAudio().orElseThrow();
         assertAll(
                 () -> assertEquals(1, messages.size()),
-                () -> assertEquals(1, messages.getFirst().tgAudios().all().size()),
+                () -> assertTrue(messages.getFirst().tgAudio().isPresent()),
                 () -> assertTrue(tgAudio.tgFile().retrieve().orElseThrow().exists()),
                 () -> assertTrue(tgAudio.tgMetadata().originalFileName().startsWith("jcr-binary_")),
                 () -> assertEquals("audio/mpeg", tgAudio.tgMetadata().mimeType()),
@@ -512,10 +494,47 @@ class GeneralTest extends TestEnvironment {
                 () -> assertTrue(
                         new TGUpdateBasic(update, firstBot, fullResourceAccess)
                                 .tgMessage()
-                                .tgAudios()
-                                .all()
-                                .stream()
-                                .findFirst()
+                                .tgAudio()
+                                .orElseThrow()
+                                .asset()
+                                .isEmpty()
+                )
+        );
+    }
+
+    @Test
+    void voice() {
+        SendVoice sendVoice = new SendVoice(
+                chatID, new InputFile(loadResourceIntoFile("time-forward.mp3"))
+        );
+        Message messageSent = firstBot.tgIOGate().execute(sendVoice);
+        Update update = new Update();
+        update.setMessage(messageSent);
+        firstBot.tgIOGate().consumeAsync(update).join();
+        List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
+                .tgMessages()
+                .all();
+        TGVoice tgVoice = messages.getFirst().tgVoice().orElseThrow();
+        exportJCRtoXML();
+        assertAll(
+                () -> assertEquals(1, messages.size()),
+                () -> assertTrue(messages.getFirst().tgVoice().isPresent()),
+                () -> assertTrue(tgVoice.tgFile().retrieve().orElseThrow().exists()),
+                () -> assertTrue(tgVoice.tgMetadata().originalFileName().isEmpty()),
+                () -> assertEquals("audio/ogg", tgVoice.tgMetadata().mimeType()),
+                () -> assertTrue(
+                        tgVoice.tgMetadata().all().get(TGMetadata.PN_ORIGINAL_FILE_NAME).isEmpty()
+                ),
+                () -> assertFalse(
+                        tgVoice.asset().orElseThrow().jcrPath().get().isBlank()
+                ),
+                () -> assertFalse(
+                        tgVoice.asset().orElseThrow().jcrUUID().isBlank()
+                ),
+                () -> assertTrue(
+                        new TGUpdateBasic(update, firstBot, fullResourceAccess)
+                                .tgMessage()
+                                .tgVoice()
                                 .orElseThrow()
                                 .asset()
                                 .isEmpty()
@@ -673,73 +692,18 @@ class GeneralTest extends TestEnvironment {
                 ),
                 () -> assertTrue(
                         tgUpdateBeforeRegistration.tgMessage()
-                                .tgAudios()
-                                .all()
-                                .stream()
-                                .findFirst()
+                                .tgAudio()
                                 .orElseThrow()
                                 .asset()
                                 .isEmpty()
                 ),
                 () -> assertTrue(
                         tgUpdateAfterRegistration.tgMessage()
-                                .tgAudios()
-                                .all()
-                                .stream()
-                                .findFirst()
+                                .tgAudio()
                                 .orElseThrow()
                                 .asset()
                                 .isPresent()
                 )
         );
-    }
-
-    @Test
-    @Tag("register-update-without-binaries")
-    void registerUpdateWithoutBinaries() {
-        SendPhoto sendPhoto = new SendPhoto(chatID, new InputFile(loadResourceIntoFile("1.jpeg")));
-        SendDocument sendDocument = new SendDocument(
-                chatID, new InputFile(loadResourceIntoFile("documentus.pdf"))
-        );
-        SendVideo sendVideo = new SendVideo(
-                chatID, new InputFile(loadResourceIntoFile("morning.mp4"))
-        );
-        SendAudio sendAudio = new SendAudio(
-                chatID, new InputFile(loadResourceIntoFile("time-forward.mp3"))
-        );
-        Message sentPhoto = firstBot.tgIOGate().execute(sendPhoto);
-        Message sentDocument = firstBot.tgIOGate().execute(sendDocument);
-        Message sentVideo = firstBot.tgIOGate().execute(sendVideo);
-        Message sentAudio = firstBot.tgIOGate().execute(sendAudio);
-        Update updatePhoto = new Update();
-        updatePhoto.setMessage(sentPhoto);
-        Update updateDocument = new Update();
-        updateDocument.setMessage(sentDocument);
-        Update updateVideo = new Update();
-        updateVideo.setMessage(sentVideo);
-        Update updateAudio = new Update();
-        updateAudio.setMessage(sentAudio);
-        CompletableFuture<Void> updatesFutures = CompletableFuture.allOf(
-                firstBot.tgIOGate()
-                        .consumeAsync(List.of(updatePhoto, updateDocument, updateVideo, updateAudio))
-                        .toArray(new CompletableFuture[0])
-        );
-        try {
-            updatesFutures.get(5, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException exception) {
-            log.warn("Not waiting longer for updates", exception);
-        }
-        List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
-                .tgMessages()
-                .all();
-        messages.forEach(
-                tgMessage -> {
-                    tgMessage.tgPhotos().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
-                    tgMessage.tgDocuments().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
-                    tgMessage.tgVideos().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
-                    tgMessage.tgAudios().all().forEach(tgAsset -> assertTrue(tgAsset.tgFile().retrieve().isEmpty()));
-                }
-        );
-        assertEquals(4, messages.size());
     }
 }

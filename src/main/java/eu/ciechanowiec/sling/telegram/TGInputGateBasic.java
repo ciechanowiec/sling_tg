@@ -50,7 +50,7 @@ class TGInputGateBasic implements TGInputGate {
 
     @Override
     public CompletableFuture<Void> consumeAsync(Update update) {
-        log.debug("Received an update. Will pass them to async execution");
+        log.debug("Received an update. Will pass it to async execution");
         return CompletableFuture.runAsync(() -> consume(update));
     }
 }

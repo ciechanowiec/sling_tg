@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 @Slf4j
 @ToString
-class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo {
+class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo, TGVoice {
 
     @ToString.Exclude
     private final Supplier<TGFile> tgFileSupplier;
@@ -56,7 +56,7 @@ class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo {
     }
 
     @SuppressWarnings("PMD.CognitiveComplexity")
-    private TGAssetBasic(WithOriginalMetadata withOriginalMetadata, TGBot tgBot) {
+    TGAssetBasic(WithOriginalMetadata withOriginalMetadata, TGBot tgBot) {
         MemoizingSupplier<Optional<File>> fileSupplier = new MemoizingSupplier<>(
                 () -> {
                     String fileId = withOriginalMetadata.fileID();

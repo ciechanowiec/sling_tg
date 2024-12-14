@@ -1,6 +1,5 @@
 package eu.ciechanowiec.sling.telegram;
 
-import eu.ciechanowiec.conditional.Conditional;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.rocket.commons.UnwrappedIteration;
 import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
@@ -35,17 +34,10 @@ class TGMessagesBasic implements TGMessages {
     }
 
     @Override
-    public TGMessage persistNew(TGMessage tgMessageToPersist, boolean doPersistBinaries) {
+    public TGMessage persistNew(TGMessage tgMessageToPersist) {
         log.trace("Persisting {} for {}", tgMessageToPersist, this);
         TargetJCRPath newMessagePath = new TargetJCRPath(new ParentJCRPath(jcrPath), UUID.randomUUID());
-        return Conditional.conditional(doPersistBinaries)
-                .onTrue(() -> tgMessageToPersist.save(newMessagePath))
-                .onFalse(
-                        () -> new TGMessageBasic(
-                                new TGMessageNoBinariesPersistence(tgMessageToPersist, resourceAccess), resourceAccess
-                        ).save(newMessagePath)
-                )
-                .get(TGMessage.class);
+        return tgMessageToPersist.save(newMessagePath);
     }
 
     @Override

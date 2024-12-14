@@ -45,18 +45,13 @@ public class TGUpdatesRegistrarBasic implements TGUpdatesRegistrar {
 
     @Override
     public TGUpdate register(TGUpdate tgUpdate) {
-        return register(tgUpdate, true);
-    }
-
-    @Override
-    public TGUpdate register(TGUpdate tgUpdate, boolean doPersistBinaries) {
-        log.trace("Registering {}. Do persist binaries: {}", tgUpdate, doPersistBinaries);
+        log.trace("Registering {}", tgUpdate);
         TGMessage tgMessage = tgUpdate.tgMessage();
         TGChat tgChat = tgChats.getOrCreate(tgUpdate, tgUpdate.tgBot());
         log.trace("Retrieved chat: {}", tgChat);
         TGMessages tgMessages = tgChat.tgMessages();
         log.trace("Retrieved messages: {}", tgMessages);
-        TGMessage savedTGMessage = tgMessages.persistNew(tgMessage, doPersistBinaries);
+        TGMessage savedTGMessage = tgMessages.persistNew(tgMessage);
         log.debug("Saved: {}", savedTGMessage);
         return tgUpdate.withNewMessage(savedTGMessage);
     }
