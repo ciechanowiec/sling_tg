@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <name>Sling TG</name>
-    <description>Web framework for managing Telegram bots</description>
+    <description>Addon to Sling Rocket web framework for managing Telegram bots</description>
     <url>${url}</url>
     <inceptionYear>2024</inceptionYear>
 
