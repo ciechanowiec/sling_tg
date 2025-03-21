@@ -7,7 +7,7 @@
     <parent>
         <groupId>eu.ciechanowiec</groupId>
         <artifactId>sling.rocket.parent</artifactId>
-        <version>14.0.0</version>
+        <version>14.0.2</version>
     </parent>
 
     <groupId>eu.ciechanowiec</groupId>
@@ -47,17 +47,6 @@
         <system>GitHub Issues</system>
         <url>${url}/issues</url>
     </issueManagement>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <properties>
         <url>https://github.com/ciechanowiec/sling_tg</url>
@@ -246,9 +235,8 @@
             <artifactId>org.apache.sling.testing.sling-mock.junit5</artifactId>
         </dependency>
         <dependency>
-            <!-- For enabling logging in tests -->
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.commons.log</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
         </dependency>
     </dependencies>
 
@@ -590,7 +578,7 @@ Import-Package: !lombok,*
         <settings>
           <servers>
             <server>
-              <id>ossrh</id>
+              <id>central</id>
               <username>your-dynamic-nexus-id</username>
               <password>your-nexus-token</password>
             </server>
@@ -612,19 +600,15 @@ Import-Package: !lombok,*
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <signer>bc</signer>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>${nexus-staging-maven-plugin.version}</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

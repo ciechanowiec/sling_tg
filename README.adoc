@@ -56,8 +56,8 @@ Unit tests are executed with two real Telegram bots, and require passing the bot
 [source,bash]
 ....
 mvn clean install \
-    -Dsling.firstBotToken=HIDDEN_TOKEN \
-    -Dsling.secondBotToken=HIDDEN_TOKEN \
+    -Dsling.firstBotToken=<hidden-first-bot-token> \
+    -Dsling.secondBotToken=<hidden-second-bot-token> \
     -Dsling.chatID=HIDDEN_CHAT_ID
 ....
 

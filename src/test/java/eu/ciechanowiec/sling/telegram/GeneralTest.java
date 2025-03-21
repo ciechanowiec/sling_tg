@@ -515,7 +515,6 @@ class GeneralTest extends TestEnvironment {
                 .tgMessages()
                 .all();
         TGVoice tgVoice = messages.getFirst().tgVoice().orElseThrow();
-        exportJCRtoXML();
         assertAll(
                 () -> assertEquals(1, messages.size()),
                 () -> assertTrue(messages.getFirst().tgVoice().isPresent()),
