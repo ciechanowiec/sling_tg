@@ -9,6 +9,7 @@ import eu.ciechanowiec.sling.telegram.api.TGChat;
 import eu.ciechanowiec.sling.telegram.api.TGChats;
 import eu.ciechanowiec.sling.telegram.api.WithTGBotID;
 import eu.ciechanowiec.sling.telegram.api.WithTGChatID;
+import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -17,22 +18,25 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-import org.osgi.service.component.annotations.*;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
-
-import java.util.Map;
 
 /**
  * Basic implementation of {@link TGChats}.
  */
 @Component(
-        service = {TGChats.class, TGChatsBasic.class},
-        immediate = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL
+    service = {TGChats.class, TGChatsBasic.class},
+    immediate = true,
+    configurationPolicy = ConfigurationPolicy.OPTIONAL
 )
 @Designate(
-        ocd = TGChatsConfig.class
+    ocd = TGChatsConfig.class
 )
 @Slf4j
 @ToString
@@ -44,13 +48,15 @@ public class TGChatsBasic implements TGChats {
 
     /**
      * Constructs an instance of this class.
+     *
      * @param fullResourceAccess {@link ResourceAccess} that will be used to acquire access to resources
-     * @param config configuration of this {@link TGChats}
+     * @param config             configuration of this {@link TGChats}
      */
     @Activate
     public TGChatsBasic(
-            @Reference(cardinality = ReferenceCardinality.MANDATORY) FullResourceAccess fullResourceAccess,
-            TGChatsConfig config
+        @Reference(cardinality = ReferenceCardinality.MANDATORY)
+        FullResourceAccess fullResourceAccess,
+        TGChatsConfig config
     ) {
         this.fullResourceAccess = fullResourceAccess;
         this.config = config;
@@ -70,8 +76,8 @@ public class TGChatsBasic implements TGChats {
         try (ResourceResolver resourceResolver = fullResourceAccess.acquireAccess()) {
             String pathToEnsureRaw = pathToEnsure.get();
             Resource resource = ResourceUtil.getOrCreateResource(
-                    resourceResolver, pathToEnsureRaw,
-                    Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER), null, true
+                resourceResolver, pathToEnsureRaw,
+                Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER), null, true
             );
             log.info("Ensured {}", resource);
         }
@@ -89,8 +95,8 @@ public class TGChatsBasic implements TGChats {
         try (ResourceResolver resourceResolver = fullResourceAccess.acquireAccess()) {
             String specificChatPathRaw = specificChatPath.get();
             Resource specificChatResource = ResourceUtil.getOrCreateResource(
-                    resourceResolver, specificChatPathRaw,
-                    Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER), null, true
+                resourceResolver, specificChatPathRaw,
+                Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER), null, true
             );
             log.trace("Ensured the chat as {}", specificChatResource);
             return new TGChatBasic(specificChatPath, fullResourceAccess);

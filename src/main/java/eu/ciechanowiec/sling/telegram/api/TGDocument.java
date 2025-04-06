@@ -1,8 +1,7 @@
 package eu.ciechanowiec.sling.telegram.api;
 
-import org.telegram.telegrambots.meta.api.objects.Document;
-
 import javax.jcr.Node;
+import org.telegram.telegrambots.meta.api.objects.Document;
 
 /**
  * Proxy of a {@link Document}.

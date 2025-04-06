@@ -8,6 +8,7 @@ public interface WithTGChatID {
 
     /**
      * {@link TGChatID}.
+     *
      * @return {@link TGChatID}
      */
     TGChatID tgChatID();

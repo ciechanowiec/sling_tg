@@ -7,4 +7,5 @@ import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
  */
 @FunctionalInterface
 public interface TGBotHome extends JCRPath {
+
 }

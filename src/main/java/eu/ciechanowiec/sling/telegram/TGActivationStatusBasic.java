@@ -7,10 +7,9 @@ import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGActivationStatus;
+import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.function.Supplier;
 
 @ToString
 @Slf4j
@@ -74,7 +73,7 @@ class TGActivationStatusBasic implements TGActivationStatus {
         boolean containsProperty = nodeProperties.containsProperty(PN_IS_ACTIVE);
         if (containsProperty) {
             String message = String.format(
-                    "The node %s already contains the property '%s'", nodeJCRPath, PN_IS_ACTIVE
+                "The node %s already contains the property '%s'", nodeJCRPath, PN_IS_ACTIVE
             );
             throw new OccupiedJCRPathException(message);
         }

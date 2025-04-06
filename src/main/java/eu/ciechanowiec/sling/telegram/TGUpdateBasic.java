@@ -6,13 +6,12 @@ import eu.ciechanowiec.sling.telegram.api.TGBot;
 import eu.ciechanowiec.sling.telegram.api.TGChatID;
 import eu.ciechanowiec.sling.telegram.api.TGMessage;
 import eu.ciechanowiec.sling.telegram.api.TGUpdate;
+import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Basic implementation of {@link TGUpdate}.
@@ -31,8 +30,9 @@ public class TGUpdateBasic implements TGUpdate {
 
     /**
      * Constructs an instance of this class.
-     * @param update {@link Update} wrapped by this {@link TGUpdate}
-     * @param tgBot {@link TGBot} that received this {@link TGUpdate}
+     *
+     * @param update         {@link Update} wrapped by this {@link TGUpdate}
+     * @param tgBot          {@link TGBot} that received this {@link TGUpdate}
      * @param resourceAccess {@link ResourceAccess} that will be used to acquire access to resources
      */
     @SuppressWarnings("WeakerAccess")
@@ -55,14 +55,14 @@ public class TGUpdateBasic implements TGUpdate {
     @Override
     public TGChatID tgChatID() {
         return Optional.ofNullable(update.getMessage())
-                .<TGChatID>map(TGChatIDBasic::new)
-                .orElseGet(() -> {
-                    log.warn(
-                            "Unable to find chat ID in this Update, so the default 0L will be returned as chatID: {}",
-                            update
-                    );
-                    return TGChatIDBasic.UNKNOWN;
-                });
+            .<TGChatID>map(TGChatIDBasic::new)
+            .orElseGet(() -> {
+                log.warn(
+                    "Unable to find chat ID in this Update, so the default 0L will be returned as chatID: {}",
+                    update
+                );
+                return TGChatIDBasic.UNKNOWN;
+            });
     }
 
     @Override

@@ -1,9 +1,8 @@
 package eu.ciechanowiec.sling.telegram.api;
 
 import eu.ciechanowiec.sling.rocket.jcr.StagedProperty;
-
-import javax.jcr.Property;
 import java.util.Calendar;
+import javax.jcr.Property;
 
 /**
  * Date when an associated entity was sent.
@@ -17,6 +16,7 @@ public interface TGSendingDate extends StagedProperty<TGSendingDate> {
 
     /**
      * Date when an associated entity was sent.
+     *
      * @return date when an associated entity was sent
      */
     Calendar get();

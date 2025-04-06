@@ -9,12 +9,14 @@ public interface TGBotRegistration {
 
     /**
      * {@link TGIOGate} of a registered {@link TGBot}.
+     *
      * @return {@link TGIOGate} of a registered {@link TGBot}
      */
     TGIOGate tgIOGate();
 
     /**
      * {@link BotSession} of a registered {@link TGBot}.
+     *
      * @return {@link BotSession} of a registered {@link TGBot}
      */
     BotSession botSession();

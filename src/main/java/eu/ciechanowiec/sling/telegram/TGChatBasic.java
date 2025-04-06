@@ -6,6 +6,7 @@ import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGChat;
 import eu.ciechanowiec.sling.telegram.api.TGMessages;
+import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
-
-import java.util.Map;
 
 @Slf4j
 @ToString
@@ -38,9 +37,9 @@ class TGChatBasic implements TGChat {
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             String messagesJCRPathRaw = messagesJCRPath.get();
             Resource messages = ResourceUtil.getOrCreateResource(
-                    resourceResolver, messagesJCRPathRaw,
-                    Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER),
-                    JcrResourceConstants.NT_SLING_FOLDER, true
+                resourceResolver, messagesJCRPathRaw,
+                Map.of(JcrConstants.JCR_PRIMARYTYPE, JcrResourceConstants.NT_SLING_ORDERED_FOLDER),
+                JcrResourceConstants.NT_SLING_FOLDER, true
             );
             log.trace("Ensured {}", messages);
             return new TGMessagesBasic(messagesJCRPath, resourceAccess);

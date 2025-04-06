@@ -6,18 +6,17 @@ import eu.ciechanowiec.sling.rocket.jcr.DefaultProperties;
 import eu.ciechanowiec.sling.rocket.jcr.NodeProperties;
 import eu.ciechanowiec.sling.telegram.api.TGMetadata;
 import jakarta.ws.rs.core.MediaType;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Video;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 @ToString
@@ -35,11 +34,11 @@ class TGMetadataBasic implements TGMetadata {
     TGMetadataBasic(Document document, Supplier<String> fallbackMimeTypeSupplier) {
         this.originalFileNameSupplier = () -> Optional.ofNullable(document.getFileName()).orElse(StringUtils.EMPTY);
         this.mimeTypeSupplier = Optional.ofNullable(document.getMimeType())
-                .map(mimeType -> (Supplier<String>) () -> mimeType)
-                .orElse(fallbackMimeTypeSupplier);
+            .map(mimeType -> (Supplier<String>) () -> mimeType)
+            .orElse(fallbackMimeTypeSupplier);
         this.allSupplier = () -> Map.of(
-                PN_MIME_TYPE, mimeType(),
-                PN_ORIGINAL_FILE_NAME, originalFileName()
+            PN_MIME_TYPE, mimeType(),
+            PN_ORIGINAL_FILE_NAME, originalFileName()
         );
         this.propertiesSupplier = Optional::empty;
         log.trace("Initialized {}", this);
@@ -48,11 +47,11 @@ class TGMetadataBasic implements TGMetadata {
     TGMetadataBasic(WithOriginalMetadata withOriginalMetadata, Supplier<String> fallbackMimeTypeSupplier) {
         this.originalFileNameSupplier = () -> withOriginalMetadata.originalFileName().orElse(StringUtils.EMPTY);
         this.mimeTypeSupplier = withOriginalMetadata.originalMimeType()
-                .map(mimeType -> (Supplier<String>) () -> mimeType)
-                .orElse(fallbackMimeTypeSupplier);
+            .map(mimeType -> (Supplier<String>) () -> mimeType)
+            .orElse(fallbackMimeTypeSupplier);
         this.allSupplier = () -> Map.of(
-                PN_MIME_TYPE, mimeType(),
-                PN_ORIGINAL_FILE_NAME, originalFileName()
+            PN_MIME_TYPE, mimeType(),
+            PN_ORIGINAL_FILE_NAME, originalFileName()
         );
         this.propertiesSupplier = Optional::empty;
         log.trace("Initialized {}", this);
@@ -61,11 +60,11 @@ class TGMetadataBasic implements TGMetadata {
     TGMetadataBasic(Video video, Supplier<String> fallbackMimeTypeSupplier) {
         this.originalFileNameSupplier = () -> Optional.ofNullable(video.getFileName()).orElse(StringUtils.EMPTY);
         this.mimeTypeSupplier = Optional.ofNullable(video.getMimeType())
-                .map(mimeType -> (Supplier<String>) () -> mimeType)
-                .orElse(fallbackMimeTypeSupplier);
+            .map(mimeType -> (Supplier<String>) () -> mimeType)
+            .orElse(fallbackMimeTypeSupplier);
         this.allSupplier = () -> Map.of(
-                PN_MIME_TYPE, mimeType(),
-                PN_ORIGINAL_FILE_NAME, originalFileName()
+            PN_MIME_TYPE, mimeType(),
+            PN_ORIGINAL_FILE_NAME, originalFileName()
         );
         this.propertiesSupplier = Optional::empty;
         log.trace("Initialized {}", this);
@@ -74,11 +73,11 @@ class TGMetadataBasic implements TGMetadata {
     TGMetadataBasic(Audio audio, Supplier<String> fallbackMimeTypeSupplier) {
         this.originalFileNameSupplier = () -> Optional.ofNullable(audio.getFileName()).orElse(StringUtils.EMPTY);
         this.mimeTypeSupplier = Optional.ofNullable(audio.getMimeType())
-                .map(mimeType -> (Supplier<String>) () -> mimeType)
-                .orElse(fallbackMimeTypeSupplier);
+            .map(mimeType -> (Supplier<String>) () -> mimeType)
+            .orElse(fallbackMimeTypeSupplier);
         this.allSupplier = () -> Map.of(
-                PN_MIME_TYPE, mimeType(),
-                PN_ORIGINAL_FILE_NAME, originalFileName()
+            PN_MIME_TYPE, mimeType(),
+            PN_ORIGINAL_FILE_NAME, originalFileName()
         );
         this.propertiesSupplier = Optional::empty;
         log.trace("Initialized {}", this);
@@ -86,10 +85,10 @@ class TGMetadataBasic implements TGMetadata {
 
     TGMetadataBasic(Asset asset) {
         originalFileNameSupplier = () -> properties().flatMap(
-                nodeProperties -> nodeProperties.propertyValue(PN_ORIGINAL_FILE_NAME, DefaultProperties.STRING_CLASS)
+            nodeProperties -> nodeProperties.propertyValue(PN_ORIGINAL_FILE_NAME, DefaultProperties.STRING_CLASS)
         ).orElse(StringUtils.EMPTY);
         mimeTypeSupplier = () -> properties().flatMap(
-                nodeProperties -> nodeProperties.propertyValue(PN_MIME_TYPE, DefaultProperties.STRING_CLASS)
+            nodeProperties -> nodeProperties.propertyValue(PN_MIME_TYPE, DefaultProperties.STRING_CLASS)
         ).orElse(MediaType.WILDCARD);
         allSupplier = () -> properties().map(NodeProperties::all).orElse(Map.of());
         propertiesSupplier = () -> asset.assetMetadata().properties();

@@ -1,5 +1,10 @@
 package eu.ciechanowiec.sling.telegram;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
@@ -7,8 +12,6 @@ import eu.ciechanowiec.sling.rocket.test.TestEnvironment;
 import eu.ciechanowiec.sling.telegram.api.TGActivationStatus;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TGActivationStatusBasicTest extends TestEnvironment {
 
@@ -30,12 +33,12 @@ class TGActivationStatusBasicTest extends TestEnvironment {
         ParentJCRPath nodeJCRPath = new ParentJCRPath(new TargetJCRPath(rawPath));
         TGActivationStatus persistedStatus = inMemoryStatusReactivated.save(nodeJCRPath);
         assertAll(
-                () -> assertTrue(persistedStatus.isActive()),
-                () -> assertTrue(new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).isActive())
+            () -> assertTrue(persistedStatus.isActive()),
+            () -> assertTrue(new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).isActive())
         );
         assertThrows(
-                OccupiedJCRPathException.class,
-                () -> new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).save(nodeJCRPath)
+            OccupiedJCRPathException.class,
+            () -> new TGActivationStatusBasic(nodeJCRPath, fullResourceAccess).save(nodeJCRPath)
         );
     }
 }

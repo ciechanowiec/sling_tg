@@ -1,8 +1,7 @@
 package eu.ciechanowiec.sling.telegram.api;
 
-import org.telegram.telegrambots.meta.api.objects.Audio;
-
 import javax.jcr.Node;
+import org.telegram.telegrambots.meta.api.objects.Audio;
 
 /**
  * Proxy of an {@link Audio}.

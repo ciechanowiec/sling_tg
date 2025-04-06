@@ -1,7 +1,6 @@
 package eu.ciechanowiec.sling.telegram.api;
 
 import eu.ciechanowiec.sling.rocket.jcr.StagedProperty;
-
 import javax.jcr.Property;
 
 /**
@@ -16,18 +15,21 @@ public interface TGMessageID extends StagedProperty<TGMessageID> {
 
     /**
      * ID that uniquely identifies a {@link TGMessage}.
+     *
      * @return ID that uniquely identifies a {@link TGMessage}
      */
     String asString();
 
     /**
      * ID that uniquely identifies a {@link TGMessage}.
+     *
      * @return ID that uniquely identifies a {@link TGMessage}
      */
     long asLong();
 
     /**
      * ID that uniquely identifies a {@link TGMessage}.
+     *
      * @return ID that uniquely identifies a {@link TGMessage}
      */
     int asInt();

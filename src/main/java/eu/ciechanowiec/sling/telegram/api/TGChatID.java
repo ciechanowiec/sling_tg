@@ -7,12 +7,14 @@ public interface TGChatID {
 
     /**
      * ID that uniquely identifies a {@link TGChat}.
+     *
      * @return ID that uniquely identifies a {@link TGChat}
      */
     String asString();
 
     /**
      * ID that uniquely identifies a {@link TGChat}.
+     *
      * @return ID that uniquely identifies a {@link TGChat}
      */
     long asLong();

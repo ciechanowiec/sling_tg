@@ -4,12 +4,11 @@ import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.telegram.api.TGBot;
 import eu.ciechanowiec.sling.telegram.api.TGInputGate;
 import eu.ciechanowiec.sling.telegram.api.TGRootUpdatesReceiver;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @ToString
@@ -44,8 +43,8 @@ class TGInputGateBasic implements TGInputGate {
         int numOfUpdates = updates.size();
         log.debug("Received {} update(s). Will pass them to async execution", numOfUpdates);
         return updates.stream()
-                      .map(update -> CompletableFuture.runAsync(() -> consume(update)))
-                      .toList();
+            .map(update -> CompletableFuture.runAsync(() -> consume(update)))
+            .toList();
     }
 
     @Override

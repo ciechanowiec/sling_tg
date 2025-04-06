@@ -3,18 +3,22 @@ package eu.ciechanowiec.sling.telegram;
 import eu.ciechanowiec.sling.telegram.api.TGIOGate;
 import eu.ciechanowiec.sling.telegram.api.TGInputGate;
 import eu.ciechanowiec.sling.telegram.api.TGOutputGate;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.*;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.methods.send.SendVoice;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 
 class TGIOGateBasic implements TGIOGate {
 
@@ -29,7 +33,7 @@ class TGIOGateBasic implements TGIOGate {
     @Override
     @SuppressWarnings("squid:S119")
     public <T extends Serializable, Method extends BotApiMethod<T>> T execute(Method method)
-            throws TelegramApiRequestException {
+        throws TelegramApiRequestException {
         return tgOutputGate.execute(method);
     }
 

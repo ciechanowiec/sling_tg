@@ -7,4 +7,5 @@ import eu.ciechanowiec.sling.rocket.asset.AssetFile;
  */
 @FunctionalInterface
 public interface TGFile extends AssetFile {
+
 }

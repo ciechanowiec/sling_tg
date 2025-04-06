@@ -8,16 +8,15 @@ import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGActivationStatus;
 import eu.ciechanowiec.sling.telegram.api.TGMessage;
 import eu.ciechanowiec.sling.telegram.api.TGMessages;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.jcr.query.Query;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-
-import javax.jcr.query.Query;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @ToString
@@ -52,32 +51,32 @@ class TGMessagesBasic implements TGMessages {
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             String jcrPathRaw = jcrPath.get();
             return Optional.ofNullable(resourceResolver.getResource(jcrPathRaw))
-                    .map(Resource::listChildren)
-                    .map(UnwrappedIteration::new)
-                    .stream()
-                    .flatMap(UnwrappedIteration::stream)
-                    .map(Resource::getPath)
-                    .map(TargetJCRPath::new)
-                    .<TGMessage>map(targetJCRPath -> new TGMessageBasic(targetJCRPath, resourceAccess))
-                    .sorted(arrangeStrategy.comparator())
-                    .toList();
+                .map(Resource::listChildren)
+                .map(UnwrappedIteration::new)
+                .stream()
+                .flatMap(UnwrappedIteration::stream)
+                .map(Resource::getPath)
+                .map(TargetJCRPath::new)
+                .<TGMessage>map(targetJCRPath -> new TGMessageBasic(targetJCRPath, resourceAccess))
+                .sorted(arrangeStrategy.comparator())
+                .toList();
         }
     }
 
     @Override
     public List<TGMessage> active() {
         String query = "SELECT * FROM [%s] AS node WHERE ISDESCENDANTNODE(node, '%s') AND node.[%s] = true".formatted(
-                JcrConstants.NT_BASE, jcrPath.get(), TGActivationStatus.PN_IS_ACTIVE
+            JcrConstants.NT_BASE, jcrPath.get(), TGActivationStatus.PN_IS_ACTIVE
         );
         log.trace("Retrieving active messages for {} with this query: {}", this, query);
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             return new UnwrappedIteration<>(resourceResolver.findResources(query, Query.JCR_SQL2))
-                    .stream()
-                    .map(Resource::getPath)
-                    .map(TargetJCRPath::new)
-                    .<TGMessage>map(targetJCRPath -> new TGMessageBasic(targetJCRPath, resourceAccess))
-                    .sorted(ArrangeStrategy.BY_SENDING_DATE_ASC.comparator())
-                    .toList();
+                .stream()
+                .map(Resource::getPath)
+                .map(TargetJCRPath::new)
+                .<TGMessage>map(targetJCRPath -> new TGMessageBasic(targetJCRPath, resourceAccess))
+                .sorted(ArrangeStrategy.BY_SENDING_DATE_ASC.comparator())
+                .toList();
         }
     }
 
@@ -87,8 +86,8 @@ class TGMessagesBasic implements TGMessages {
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             String jcrPathRaw = jcrPath.get();
             return Optional.ofNullable(resourceResolver.getResource(jcrPathRaw))
-                    .map(Resource::hasChildren)
-                    .orElse(false);
+                .map(Resource::hasChildren)
+                .orElse(false);
         }
     }
 

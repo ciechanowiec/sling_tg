@@ -10,6 +10,7 @@ public interface WithOriginalUpdate {
 
     /**
      * Original {@link Update}.
+     *
      * @return original {@link Update}
      */
     Update originalUpdate();

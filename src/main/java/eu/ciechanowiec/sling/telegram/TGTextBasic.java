@@ -8,13 +8,12 @@ import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGText;
 import eu.ciechanowiec.sling.telegram.api.WithOriginalUpdate;
+import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 @ToString
@@ -41,13 +40,13 @@ class TGTextBasic implements TGText {
     private String extractTextFromMessage(WithOriginalUpdate withOriginalUpdate) {
         Update update = withOriginalUpdate.originalUpdate();
         return Optional.ofNullable(update.getMessage())
-                .flatMap(message -> Optional.ofNullable(message.getText()))
-                .orElseGet(() -> {
-                    log.debug(
-                            "Unable to find message text in this Update, so the empty text will be returned: {}", update
-                    );
-                    return StringUtils.EMPTY;
-                });
+            .flatMap(message -> Optional.ofNullable(message.getText()))
+            .orElseGet(() -> {
+                log.debug(
+                    "Unable to find message text in this Update, so the empty text will be returned: {}", update
+                );
+                return StringUtils.EMPTY;
+            });
     }
 
     @Override

@@ -1,8 +1,7 @@
 package eu.ciechanowiec.sling.telegram.api;
 
-import org.telegram.telegrambots.meta.api.objects.Video;
-
 import javax.jcr.Node;
+import org.telegram.telegrambots.meta.api.objects.Video;
 
 /**
  * Proxy of a {@link Video}.

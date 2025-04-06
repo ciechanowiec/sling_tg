@@ -8,6 +8,7 @@ public interface TGBotToken {
 
     /**
      * Token of a {@link TGBot}.
+     *
      * @return Token of a {@link TGBot}
      */
     String get();

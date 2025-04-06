@@ -2,13 +2,12 @@ package eu.ciechanowiec.sling.telegram;
 
 import eu.ciechanowiec.sling.rocket.unit.DataSize;
 import eu.ciechanowiec.sling.rocket.unit.DataUnit;
+import java.util.Optional;
+import java.util.function.Supplier;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Video;
 import org.telegram.telegrambots.meta.api.objects.Voice;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 @SuppressWarnings("PMD.DataClass")
 class WithOriginalMetadata {
@@ -23,7 +22,7 @@ class WithOriginalMetadata {
         this.originalMimeType = () -> Optional.ofNullable(document.getMimeType());
         this.originalFileName = () -> Optional.ofNullable(document.getFileName());
         this.originalDataSize = () -> Optional.ofNullable(document.getFileSize())
-                .map(size -> new DataSize(size, DataUnit.BYTES));
+            .map(size -> new DataSize(size, DataUnit.BYTES));
     }
 
     WithOriginalMetadata(Audio audio) {
@@ -31,7 +30,7 @@ class WithOriginalMetadata {
         this.originalMimeType = () -> Optional.ofNullable(audio.getMimeType());
         this.originalFileName = () -> Optional.ofNullable(audio.getFileName());
         this.originalDataSize = () -> Optional.ofNullable(audio.getFileSize())
-                .map(size -> new DataSize(size, DataUnit.BYTES));
+            .map(size -> new DataSize(size, DataUnit.BYTES));
     }
 
     WithOriginalMetadata(Video video) {
@@ -39,7 +38,7 @@ class WithOriginalMetadata {
         this.originalMimeType = () -> Optional.ofNullable(video.getMimeType());
         this.originalFileName = () -> Optional.ofNullable(video.getFileName());
         this.originalDataSize = () -> Optional.ofNullable(video.getFileSize())
-                .map(size -> new DataSize(size, DataUnit.BYTES));
+            .map(size -> new DataSize(size, DataUnit.BYTES));
     }
 
     WithOriginalMetadata(Voice voice) {
@@ -47,7 +46,7 @@ class WithOriginalMetadata {
         this.originalMimeType = () -> Optional.ofNullable(voice.getMimeType());
         this.originalFileName = Optional::empty;
         this.originalDataSize = () -> Optional.ofNullable(voice.getFileSize())
-                .map(size -> new DataSize(size, DataUnit.BYTES));
+            .map(size -> new DataSize(size, DataUnit.BYTES));
     }
 
     String fileID() {

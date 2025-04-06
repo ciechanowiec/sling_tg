@@ -8,9 +8,8 @@ import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGAsset;
 import eu.ciechanowiec.sling.telegram.api.TGFile;
 import eu.ciechanowiec.sling.telegram.api.TGMetadata;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class SaveTGAsset implements StagedNode<Optional<TGAsset>> {

@@ -10,6 +10,7 @@ public interface TGUpdatesRegistrar {
 
     /**
      * Persists the passed {@link TGUpdate} in the {@link Repository}.
+     *
      * @param tgUpdate {@link TGUpdate} that is supposed to be persisted in the {@link Repository}
      * @return {@link TGUpdate} that was persisted in the {@link Repository}
      */

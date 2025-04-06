@@ -1,7 +1,6 @@
 package eu.ciechanowiec.sling.telegram.api;
 
 import eu.ciechanowiec.sling.rocket.jcr.path.WithJCRPath;
-
 import javax.jcr.Node;
 
 /**
@@ -16,6 +15,7 @@ public interface TGChat extends WithJCRPath {
 
     /**
      * {@link TGMessages} of this {@link TGChat}.
+     *
      * @return {@link TGMessages} of this {@link TGChat}
      */
     TGMessages tgMessages();

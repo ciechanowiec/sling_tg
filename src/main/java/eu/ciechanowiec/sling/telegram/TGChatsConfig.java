@@ -21,14 +21,15 @@ public @interface TGChatsConfig {
 
     /**
      * {@link JCRPath} where all {@link TGChat} instances should be stored.
+     *
      * @return {@link JCRPath} where all {@link TGChat} instances should be stored
      */
     @AttributeDefinition(
-            name = "JCR Path",
-            description = "JCR path where all chats should be stored. "
-                        + "If it doesn't exist, it will be initiated by the service",
-            defaultValue = DEFAULT_JCR_PATH,
-            type = AttributeType.STRING
+        name = "JCR Path",
+        description = "JCR path where all chats should be stored. "
+            + "If it doesn't exist, it will be initiated by the service",
+        defaultValue = DEFAULT_JCR_PATH,
+        type = AttributeType.STRING
     )
     String jcr_path() default DEFAULT_JCR_PATH;
 }

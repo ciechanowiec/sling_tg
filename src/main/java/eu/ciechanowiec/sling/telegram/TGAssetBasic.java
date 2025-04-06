@@ -5,18 +5,25 @@ import eu.ciechanowiec.sling.rocket.asset.FileMetadata;
 import eu.ciechanowiec.sling.rocket.commons.MemoizingSupplier;
 import eu.ciechanowiec.sling.rocket.unit.DataSize;
 import eu.ciechanowiec.sling.rocket.unit.DataUnit;
-import eu.ciechanowiec.sling.telegram.api.*;
+import eu.ciechanowiec.sling.telegram.api.TGAudio;
+import eu.ciechanowiec.sling.telegram.api.TGBot;
+import eu.ciechanowiec.sling.telegram.api.TGDocument;
+import eu.ciechanowiec.sling.telegram.api.TGFile;
+import eu.ciechanowiec.sling.telegram.api.TGIOGate;
+import eu.ciechanowiec.sling.telegram.api.TGMetadata;
+import eu.ciechanowiec.sling.telegram.api.TGPhoto;
+import eu.ciechanowiec.sling.telegram.api.TGVideo;
+import eu.ciechanowiec.sling.telegram.api.TGVoice;
 import jakarta.ws.rs.core.MediaType;
+import java.io.File;
+import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Video;
-
-import java.io.File;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 @ToString
@@ -58,14 +65,15 @@ class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo, TGVoice {
     @SuppressWarnings("PMD.CognitiveComplexity")
     TGAssetBasic(WithOriginalMetadata withOriginalMetadata, TGBot tgBot) {
         MemoizingSupplier<Optional<File>> fileSupplier = new MemoizingSupplier<>(
-                () -> {
-                    String fileId = withOriginalMetadata.fileID();
-                    GetFile getFile = new GetFile(fileId);
-                    TGIOGate tgIOGate = tgBot.tgIOGate();
-                    return tgIOGate.execute(getFile, true);
-                }
+            () -> {
+                String fileId = withOriginalMetadata.fileID();
+                GetFile getFile = new GetFile(fileId);
+                TGIOGate tgIOGate = tgBot.tgIOGate();
+                return tgIOGate.execute(getFile, true);
+            }
         );
         tgFileSupplier = () -> new TGFile() {
+
             @Override
             public Optional<File> retrieve() {
                 return fileSupplier.get();
@@ -75,17 +83,17 @@ class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo, TGVoice {
             public DataSize size() {
                 if (fileSupplier.wasComputed()) {
                     return fileSupplier.get()
-                            .map(file -> new DataSize(() -> file))
-                            .or(withOriginalMetadata::originalDataSize)
-                            .orElse(new DataSize(0, DataUnit.BYTES));
+                        .map(file -> new DataSize(() -> file))
+                        .or(withOriginalMetadata::originalDataSize)
+                        .orElse(new DataSize(0, DataUnit.BYTES));
                 } else {
                     return withOriginalMetadata.originalDataSize().orElse(new DataSize(0, DataUnit.BYTES));
                 }
             }
         };
         tgMetadataSupplier = () -> new TGMetadataBasic(
-                withOriginalMetadata,
-                () -> fileSupplier.get().map(FileMetadata::new).map(FileMetadata::mimeType).orElse(MediaType.WILDCARD)
+            withOriginalMetadata,
+            () -> fileSupplier.get().map(FileMetadata::new).map(FileMetadata::mimeType).orElse(MediaType.WILDCARD)
         );
         assetSupplier = Optional::empty;
         log.trace("Initialized {}", this);

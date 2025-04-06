@@ -1,7 +1,6 @@
 package eu.ciechanowiec.sling.telegram.api;
 
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
-
 import javax.jcr.Node;
 import javax.jcr.Property;
 
@@ -43,30 +42,35 @@ public interface TGActor extends StagedNode<TGActor> {
 
     /**
      * ID of a {@link TGActor}.
+     *
      * @return ID of a {@link TGActor}
      */
     long id();
 
     /**
      * First name of a {@link TGActor}.
+     *
      * @return first name of a {@link TGActor}
      */
     String firstName();
 
     /**
      * Last name of a {@link TGActor}.
+     *
      * @return last name of a {@link TGActor}
      */
     String lastName();
 
     /**
      * Username of a {@link TGActor}.
+     *
      * @return username of a {@link TGActor}
      */
     String userName();
 
     /**
      * Checks if a {@link TGActor} is a bot.
+     *
      * @return {@code true} if a {@link TGActor} is a bot; {@code false} otherwise.
      */
     boolean isBot();

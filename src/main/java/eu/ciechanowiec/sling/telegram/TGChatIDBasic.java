@@ -10,6 +10,7 @@ class TGChatIDBasic implements TGChatID {
 
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     static final TGChatID UNKNOWN = new TGChatID() {
+
         @Override
         public String asString() {
             return String.valueOf(asLong());

@@ -8,13 +8,12 @@ import eu.ciechanowiec.sling.rocket.jcr.path.OccupiedJCRPathException;
 import eu.ciechanowiec.sling.rocket.jcr.path.ParentJCRPath;
 import eu.ciechanowiec.sling.telegram.api.TGMessageID;
 import eu.ciechanowiec.sling.telegram.api.WithOriginalUpdate;
+import java.util.Optional;
+import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
-
-import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 @ToString

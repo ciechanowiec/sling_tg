@@ -1,21 +1,30 @@
 package eu.ciechanowiec.sling.telegram;
 
-import eu.ciechanowiec.sling.rocket.asset.*;
+import eu.ciechanowiec.sling.rocket.asset.Asset;
+import eu.ciechanowiec.sling.rocket.asset.Assets;
+import eu.ciechanowiec.sling.rocket.asset.FileMetadata;
+import eu.ciechanowiec.sling.rocket.asset.StagedAssetReal;
+import eu.ciechanowiec.sling.rocket.asset.StagedAssets;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.rocket.jcr.NodeProperties;
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
 import eu.ciechanowiec.sling.rocket.jcr.path.JCRPath;
 import eu.ciechanowiec.sling.rocket.jcr.path.TargetJCRPath;
-import eu.ciechanowiec.sling.telegram.api.*;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.sling.api.resource.ResourceResolver;
-
+import eu.ciechanowiec.sling.telegram.api.TGAssets;
+import eu.ciechanowiec.sling.telegram.api.TGBot;
+import eu.ciechanowiec.sling.telegram.api.TGFile;
+import eu.ciechanowiec.sling.telegram.api.TGIOGate;
+import eu.ciechanowiec.sling.telegram.api.TGMetadata;
+import eu.ciechanowiec.sling.telegram.api.TGPhoto;
+import eu.ciechanowiec.sling.telegram.api.WithOriginalUpdate;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.sling.api.resource.ResourceResolver;
 
 @Slf4j
 @ToString
@@ -42,17 +51,17 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         try (ResourceResolver resourceResolver = resourceAccess.acquireAccess()) {
             String jcrPathRaw = jcrPath.get();
             return Optional.ofNullable(resourceResolver.getResource(jcrPathRaw))
-                           .filter(
-                                   resource -> new NodeProperties(
-                                           new TargetJCRPath(resource), resourceAccess
-                                   ).isPrimaryType(Assets.NT_ASSETS)
-                           )
-                           .map(resource -> new Assets(resource, resourceAccess))
-                           .map(Assets::get)
-                           .orElseGet(List::of)
-                           .stream()
-                           .<TGPhoto>map(TGAssetBasic::new)
-                           .toList();
+                .filter(
+                    resource -> new NodeProperties(
+                        new TargetJCRPath(resource), resourceAccess
+                    ).isPrimaryType(Assets.NT_ASSETS)
+                )
+                .map(resource -> new Assets(resource, resourceAccess))
+                .map(Assets::get)
+                .orElseGet(List::of)
+                .stream()
+                .<TGPhoto>map(TGAssetBasic::new)
+                .toList();
         }
     }
 
@@ -61,13 +70,13 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         PhotosFromTGUpdate photosFromUpdate = new PhotosFromTGUpdate(withOriginalUpdate, tgIOGate);
         Collection<File> photosRetrieved = photosFromUpdate.retrieve(true);
         return photosRetrieved.stream()
-                              .<TGPhoto>map(
-                                      file -> new TGAssetBasic(
-                                              () -> () -> Optional.of(file),
-                                              () -> new TGMetadataBasic(new FileMetadata(file))
-                                      )
-                              )
-                              .toList();
+            .<TGPhoto>map(
+                file -> new TGAssetBasic(
+                    () -> () -> Optional.of(file),
+                    () -> new TGMetadataBasic(new FileMetadata(file))
+                )
+            )
+            .toList();
     }
 
     @Override
@@ -81,14 +90,14 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
         List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
-                .filter(tgPhoto -> tgPhoto.tgFile().retrieve().isPresent())
-                .map(
-                        tgPhoto -> {
-                            TGFile tgFile = tgPhoto.tgFile();
-                            TGMetadata tgMetaData = tgPhoto.tgMetadata();
-                            return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
-                        }
-                ).toList();
+            .filter(tgPhoto -> tgPhoto.tgFile().retrieve().isPresent())
+            .map(
+                tgPhoto -> {
+                    TGFile tgFile = tgPhoto.tgFile();
+                    TGMetadata tgMetaData = tgPhoto.tgMetadata();
+                    return (StagedNode<Asset>) new StagedAssetReal(tgFile, tgMetaData, resourceAccess);
+                }
+            ).toList();
         Assets assets = new StagedAssets(stagedAssetsRaw, resourceAccess).save(targetJCRPath);
         log.trace("Saved {} to {}", assets, targetJCRPath);
         return new TGPhotosBasic(targetJCRPath, resourceAccess);
