@@ -67,7 +67,7 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
         log.debug("Registering {}", tgBot);
         TGBotToken tgBotToken = tgBot.tgBotToken();
         String botTokenValue = tgBotToken.get();
-        TGOutputGate tgOutputGate = new TGOutputGateBasic(tgBotToken);
+        TGOutputGate tgOutputGate = new TGOutputGateBasic(tgBot, tgBot);
         TGInputGate tgInputGate = new TGInputGateBasic(tgRootUpdatesReceiver, tgBot, fullResourceAccess);
         try {
             BotSession botSession = tgBotsApplication.registerBot(

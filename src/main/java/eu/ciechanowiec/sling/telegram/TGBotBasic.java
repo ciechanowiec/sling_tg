@@ -134,6 +134,7 @@ public class TGBotBasic implements TGBot {
             String message = String.format("Unable to set commands for %s", this);
             log.error(message, exception);
         } catch (RuntimeException exception) {
+            log.warn("Unintended workflow during commands set", exception);
             Optional.of(exception)
                 .map(Throwable::getCause)
                 .filter(TelegramApiException.class::isInstance)

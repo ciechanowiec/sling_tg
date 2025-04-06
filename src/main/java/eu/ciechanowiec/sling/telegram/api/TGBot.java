@@ -1,12 +1,11 @@
 package eu.ciechanowiec.sling.telegram.api;
 
 import org.telegram.telegrambots.longpolling.BotSession;
-import org.telegram.telegrambots.meta.TelegramUrl;
 
 /**
  * Bot in Telegram.
  */
-public interface TGBot extends WithTGBotID {
+public interface TGBot extends WithTGBotID, WithTGBotToken, WithTelegramUrl {
 
     /**
      * {@link TGBotHome} related with this {@link TGBot}.
@@ -14,13 +13,6 @@ public interface TGBot extends WithTGBotID {
      * @return {@link TGBotHome} related with this {@link TGBot}
      */
     TGBotHome tgBotHome();
-
-    /**
-     * {@link TGBotToken} related with this {@link TGBot}.
-     *
-     * @return {@link TGBotToken} related with this {@link TGBot}
-     */
-    TGBotToken tgBotToken();
 
     /**
      * {@link TGIOGate} related with this {@link TGBot}.
@@ -42,11 +34,4 @@ public interface TGBot extends WithTGBotID {
      * @return {@link BotSession} related with this {@link TGBot}
      */
     BotSession botSession();
-
-    /**
-     * {@link TelegramUrl} with the address of the Telegram Bot API that should be used by this {@link TGBot}.
-     *
-     * @return {@link TelegramUrl} with the address of the Telegram Bot API that should be used by this {@link TGBot}
-     */
-    TelegramUrl telegramUrl();
 }

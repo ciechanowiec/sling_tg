@@ -1,7 +1,10 @@
 package eu.ciechanowiec.sling.telegram;
 
-import eu.ciechanowiec.sling.telegram.api.TGBotToken;
 import eu.ciechanowiec.sling.telegram.api.TGOutputGate;
+import eu.ciechanowiec.sling.telegram.api.WithTGBotToken;
+import eu.ciechanowiec.sling.telegram.api.WithTelegramUrl;
+import eu.ciechanowiec.sneakyfun.SneakyFunction;
+import eu.ciechanowiec.sneakyfun.SneakySupplier;
 import java.io.File;
 import java.io.Serializable;
 import java.util.List;
@@ -10,6 +13,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.meta.TelegramUrl;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
@@ -29,9 +33,10 @@ class TGOutputGateBasic implements TGOutputGate {
 
     private final TelegramClient telegramClient;
 
-    TGOutputGateBasic(TGBotToken tgBotToken) {
-        String tokenValue = tgBotToken.get();
-        this.telegramClient = new OkHttpTelegramClient(tokenValue);
+    TGOutputGateBasic(WithTGBotToken withTGBotToken, WithTelegramUrl withTelegramUrl) {
+        String tokenValue = withTGBotToken.tgBotToken().get();
+        TelegramUrl telegramUrl = withTelegramUrl.telegramUrl();
+        this.telegramClient = new OkHttpTelegramClient(tokenValue, telegramUrl);
         log.info("Initialized {}", this);
     }
 
@@ -87,16 +92,38 @@ class TGOutputGateBasic implements TGOutputGate {
 
     @Override
     public Optional<File> execute(GetFile getFile, boolean deleteOnExit) {
-        log.debug("File will be downloaded: {}", getFile);
+        log.debug("File will be got: {}", getFile);
         try {
-            File file = telegramClient.downloadFile(telegramClient.execute(getFile));
-            log.trace("File downloaded: {}", file);
-            if (deleteOnExit) {
-                file.deleteOnExit();
-            }
-            return Optional.of(file);
+            org.telegram.telegrambots.meta.api.objects.File resolvedFile = telegramClient.execute(getFile);
+            log.trace("File for getting resolved: {}", resolvedFile);
+            return Optional.ofNullable(resolvedFile.getFilePath())
+                .map(
+                    SneakyFunction.sneaky(
+                        filePath -> {
+                            log.trace("File from this path will be gotten: {}", filePath);
+                            return new File(filePath);
+                        }
+                    )
+                ).filter(File::exists)
+                .or(
+                    SneakySupplier.sneaky(
+                        () -> {
+                            log.trace("File will be downloaded: {}", resolvedFile);
+                            return Optional.of(telegramClient.downloadFile(resolvedFile));
+                        }
+                    )
+                ).filter(File::exists)
+                .map(
+                    fileToReturn -> {
+                        log.trace("Got this file: {}", fileToReturn);
+                        if (deleteOnExit) {
+                            fileToReturn.deleteOnExit();
+                        }
+                        return fileToReturn;
+                    }
+                );
         } catch (TelegramApiException exception) {
-            String exceptionMessage = String.format("Unable to download file: %s", getFile);
+            String exceptionMessage = String.format("Unable to get file: %s", getFile);
             log.error(exceptionMessage, exception);
             return Optional.empty();
         }
