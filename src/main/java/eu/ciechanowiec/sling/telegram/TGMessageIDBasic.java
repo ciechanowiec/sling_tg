@@ -35,7 +35,7 @@ class TGMessageIDBasic implements TGMessageID {
     TGMessageIDBasic(JCRPath pathToNodeWithMessageIDProperty, ResourceAccess resourceAccess) {
         NodeProperties nodeProperties = new NodeProperties(pathToNodeWithMessageIDProperty, resourceAccess);
         messageIDSupplier = () -> nodeProperties.propertyValue(
-                PN_MESSAGE_ID, DefaultProperties.of(-1)
+            PN_MESSAGE_ID, DefaultProperties.of(-1)
         ).intValue();
         this.resourceAccess = resourceAccess;
         log.trace("Initialized {}", this);
@@ -44,11 +44,13 @@ class TGMessageIDBasic implements TGMessageID {
     private int extractMessageIDFromMessage(WithOriginalUpdate withOriginalUpdate) {
         Update update = withOriginalUpdate.originalUpdate();
         return Optional.ofNullable(update.getMessage())
-                .map(Message::getMessageId)
-                .orElseGet(() -> {
+            .map(Message::getMessageId)
+            .orElseGet(
+                () -> {
                     log.debug("Unable to extract message ID from this Update, so '-1' will be returned: {}", update);
                     return -1;
-                });
+                }
+            );
     }
 
     @Override
@@ -58,7 +60,7 @@ class TGMessageIDBasic implements TGMessageID {
         boolean containsProperty = nodeProperties.containsProperty(PN_MESSAGE_ID);
         if (containsProperty) {
             String message = String.format(
-                    "The node %s already contains the property '%s'", nodeJCRPath, PN_MESSAGE_ID
+                "The node %s already contains the property '%s'", nodeJCRPath, PN_MESSAGE_ID
             );
             throw new OccupiedJCRPathException(message);
         }
