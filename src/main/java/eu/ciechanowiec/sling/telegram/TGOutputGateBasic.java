@@ -9,9 +9,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.TelegramUrl;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -36,7 +39,13 @@ class TGOutputGateBasic implements TGOutputGate {
     TGOutputGateBasic(WithTGBotToken withTGBotToken, WithTelegramUrl withTelegramUrl) {
         String tokenValue = withTGBotToken.tgBotToken().get();
         TelegramUrl telegramUrl = withTelegramUrl.telegramUrl();
-        this.telegramClient = new OkHttpTelegramClient(tokenValue, telegramUrl);
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .readTimeout(2, TimeUnit.MINUTES)
+            .callTimeout(2, TimeUnit.MINUTES)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build();
+        this.telegramClient = new OkHttpTelegramClient(okHttpClient, tokenValue, telegramUrl);
         log.info("Initialized {}", this);
     }
 
@@ -92,7 +101,15 @@ class TGOutputGateBasic implements TGOutputGate {
 
     @Override
     public Optional<File> execute(GetFile getFile, boolean deleteOnExit) {
-        log.debug("File will be got: {}", getFile);
+        return Stream.of(1, 2)
+            .sequential()
+            .map(attemptNumber -> execute(getFile, deleteOnExit, attemptNumber))
+            .flatMap(Optional::stream)
+            .findFirst();
+    }
+
+    private Optional<File> execute(GetFile getFile, boolean deleteOnExit, int attemptNumber) {
+        log.debug("File will be got: {}. Attempt #{}", getFile, attemptNumber);
         try {
             org.telegram.telegrambots.meta.api.objects.File resolvedFile = telegramClient.execute(getFile);
             log.trace("File for getting resolved: {}", resolvedFile);
