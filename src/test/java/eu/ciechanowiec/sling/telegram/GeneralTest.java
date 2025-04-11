@@ -32,6 +32,7 @@ import eu.ciechanowiec.sling.telegram.api.TGUpdatesRegistrar;
 import eu.ciechanowiec.sling.telegram.api.TGVideo;
 import eu.ciechanowiec.sling.telegram.api.TGVoice;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +45,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -328,7 +328,11 @@ class GeneralTest extends TestEnvironment {
         assertAll(
             () -> assertEquals(1, messages.size()),
             () -> assertEquals(3, messages.getFirst().tgPhotos().all().size()),
-            () -> assertTrue(tgPhoto.tgFile().retrieve().orElseThrow().exists()),
+            () -> {
+                try (InputStream is = tgPhoto.tgFile().retrieve()) {
+                    assertTrue(is.readAllBytes().length > NumberUtils.INTEGER_ZERO);
+                }
+            },
             () -> assertTrue(tgPhoto.tgMetadata().originalFileName().isEmpty()),
             () -> assertEquals("image/jpeg", tgPhoto.tgMetadata().mimeType()),
             () -> assertEquals(StringUtils.EMPTY, tgPhoto.tgMetadata().all().get(TGMetadata.PN_ORIGINAL_FILE_NAME)),
@@ -409,35 +413,26 @@ class GeneralTest extends TestEnvironment {
 
     @SneakyThrows
     @Test
-    @SuppressWarnings("MagicNumber")
     void document() {
-        int fileSizeMB = 22;
-        File tooBigFile = File.createTempFile("22MB_File", ".txt");
-        String content = "A".repeat(1024); // 1 KB of data
-        FileUtils.writeStringToFile(tooBigFile, content.repeat(fileSizeMB * 1024), "UTF-8");
-        SendDocument sendUsualDocument = new SendDocument(
+        SendDocument sendDocument = new SendDocument(
             chatID, new InputFile(loadResourceIntoFile("documentus.pdf"))
         );
-        SendDocument sendTooBigDocument = new SendDocument(
-            chatID, new InputFile(tooBigFile)
-        );
-        Message usualMessageSent = firstBot.tgIOGate().execute(sendUsualDocument);
-        Message tooBigMessageSent = firstBot.tgIOGate().execute(sendTooBigDocument);
-        Update usualUpdate = new Update();
-        Update tooBigUpdate = new Update();
-        usualUpdate.setMessage(usualMessageSent);
-        tooBigUpdate.setMessage(tooBigMessageSent);
-        firstBot.tgIOGate().consumeAsync(usualUpdate).join();
-        firstBot.tgIOGate().consumeAsync(tooBigUpdate).join();
+        Message messageSent = firstBot.tgIOGate().execute(sendDocument);
+        Update update = new Update();
+        update.setMessage(messageSent);
+        firstBot.tgIOGate().consumeAsync(update).join();
         List<TGMessage> messages = tgChats.getOrCreate(() -> new TGChatIDBasic(Long.parseLong(chatID)), firstBot)
             .tgMessages()
             .all();
         TGDocument tgDocument = messages.getFirst().tgDocument().orElseThrow();
         assertAll(
-            () -> assertEquals(2, messages.size()),
+            () -> assertEquals(1, messages.size()),
             () -> assertTrue(messages.getFirst().tgDocument().isPresent()),
-            () -> assertTrue(messages.getLast().tgDocument().isEmpty()),
-            () -> assertTrue(tgDocument.tgFile().retrieve().orElseThrow().exists()),
+            () -> {
+                try (InputStream is = tgDocument.tgFile().retrieve()) {
+                    assertTrue(is.readAllBytes().length > NumberUtils.INTEGER_ZERO);
+                }
+            },
             () -> assertTrue(tgDocument.tgMetadata().originalFileName().startsWith("jcr-binary_")),
             () -> assertEquals("application/pdf", tgDocument.tgMetadata().mimeType()),
             () -> assertTrue(
@@ -450,7 +445,7 @@ class GeneralTest extends TestEnvironment {
                 tgDocument.asset().orElseThrow().jcrUUID().isBlank()
             ),
             () -> assertTrue(
-                new TGUpdateBasic(usualUpdate, firstBot, fullResourceAccess)
+                new TGUpdateBasic(update, firstBot, fullResourceAccess)
                     .tgMessage()
                     .tgDocument()
                     .orElseThrow()
@@ -476,7 +471,11 @@ class GeneralTest extends TestEnvironment {
         assertAll(
             () -> assertEquals(1, messages.size()),
             () -> assertTrue(messages.getFirst().tgVideo().isPresent()),
-            () -> assertTrue(tgVideo.tgFile().retrieve().orElseThrow().exists()),
+            () -> {
+                try (InputStream is = tgVideo.tgFile().retrieve()) {
+                    assertTrue(is.readAllBytes().length > NumberUtils.INTEGER_ZERO);
+                }
+            },
             () -> assertTrue(tgVideo.tgMetadata().originalFileName().startsWith("jcr-binary_")),
             () -> assertEquals("video/mp4", tgVideo.tgMetadata().mimeType()),
             () -> assertTrue(
@@ -515,7 +514,11 @@ class GeneralTest extends TestEnvironment {
         assertAll(
             () -> assertEquals(1, messages.size()),
             () -> assertTrue(messages.getFirst().tgAudio().isPresent()),
-            () -> assertTrue(tgAudio.tgFile().retrieve().orElseThrow().exists()),
+            () -> {
+                try (InputStream is = tgAudio.tgFile().retrieve()) {
+                    assertTrue(is.readAllBytes().length > NumberUtils.INTEGER_ZERO);
+                }
+            },
             () -> assertTrue(tgAudio.tgMetadata().originalFileName().startsWith("jcr-binary_")),
             () -> assertEquals("audio/mpeg", tgAudio.tgMetadata().mimeType()),
             () -> assertTrue(
@@ -554,7 +557,11 @@ class GeneralTest extends TestEnvironment {
         assertAll(
             () -> assertEquals(1, messages.size()),
             () -> assertTrue(messages.getFirst().tgVoice().isPresent()),
-            () -> assertTrue(tgVoice.tgFile().retrieve().orElseThrow().exists()),
+            () -> {
+                try (InputStream is = tgVoice.tgFile().retrieve()) {
+                    assertTrue(is.readAllBytes().length > NumberUtils.INTEGER_ZERO);
+                }
+            },
             () -> assertTrue(tgVoice.tgMetadata().originalFileName().isEmpty()),
             () -> assertEquals("audio/ogg", tgVoice.tgMetadata().mimeType()),
             () -> assertTrue(

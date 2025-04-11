@@ -14,16 +14,16 @@ import eu.ciechanowiec.sling.telegram.api.TGMetadata;
 import eu.ciechanowiec.sling.telegram.api.TGPhoto;
 import eu.ciechanowiec.sling.telegram.api.TGVideo;
 import eu.ciechanowiec.sling.telegram.api.TGVoice;
+import eu.ciechanowiec.sneakyfun.SneakyFunction;
 import jakarta.ws.rs.core.MediaType;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.api.objects.Audio;
-import org.telegram.telegrambots.meta.api.objects.Document;
-import org.telegram.telegrambots.meta.api.objects.Video;
 
 @Slf4j
 @ToString
@@ -37,22 +37,10 @@ class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo, TGVoice {
     private final Supplier<Optional<Asset>> assetSupplier;
 
     TGAssetBasic(Asset asset) {
-        tgFileSupplier = () -> () -> asset.assetFile().retrieve();
+        tgFileSupplier = () -> new TGFileFromAssetFile(asset.assetFile());
         tgMetadataSupplier = () -> new TGMetadataBasic(asset);
         assetSupplier = () -> Optional.of(asset);
         log.trace("Initialized {}", this);
-    }
-
-    TGAssetBasic(Audio audio, TGBot tgBot) {
-        this(new WithOriginalMetadata(audio), tgBot);
-    }
-
-    TGAssetBasic(Document document, TGBot tgBot) {
-        this(new WithOriginalMetadata(document), tgBot);
-    }
-
-    TGAssetBasic(Video video, TGBot tgBot) {
-        this(new WithOriginalMetadata(video), tgBot);
     }
 
     TGAssetBasic(Supplier<TGFile> tgFileSupplier, Supplier<TGMetadata> tgMetadataSupplier) {
@@ -75,8 +63,10 @@ class TGAssetBasic implements TGAudio, TGDocument, TGPhoto, TGVideo, TGVoice {
         tgFileSupplier = () -> new TGFile() {
 
             @Override
-            public Optional<File> retrieve() {
-                return fileSupplier.get();
+            public InputStream retrieve() {
+                return fileSupplier.get()
+                    .map(SneakyFunction.sneaky(file -> Files.newInputStream(file.toPath())))
+                    .orElse(InputStream.nullInputStream());
             }
 
             @Override

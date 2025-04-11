@@ -204,22 +204,22 @@ class TGMessageBasic implements TGMessage {
         log.trace("Saved {} for the message at {}", savedSendingDate, targetJCRPath);
         TGActivationStatus savedTGActivationStatus = tgActivationStatus().save(new ParentJCRPath(targetJCRPath));
         log.trace("Saved {} for the message at {}", savedTGActivationStatus, targetJCRPath);
-        tgDocument().map(tgDocument -> new SaveTGAsset(tgDocument, resourceAccess)).flatMap(
+        tgDocument().map(tgDocument -> new SaveTGAsset(tgDocument, resourceAccess)).map(
             saveTGAsset -> saveTGAsset.save(
                 new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGDocument.DOCUMENT_NODE_NAME)
             )
         ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
-        tgVideo().map(tgVideo -> new SaveTGAsset(tgVideo, resourceAccess)).flatMap(
+        tgVideo().map(tgVideo -> new SaveTGAsset(tgVideo, resourceAccess)).map(
             saveTGAsset -> saveTGAsset.save(
                 new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGVideo.VIDEO_NODE_NAME)
             )
         ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
-        tgAudio().map(tgAudio -> new SaveTGAsset(tgAudio, resourceAccess)).flatMap(
+        tgAudio().map(tgAudio -> new SaveTGAsset(tgAudio, resourceAccess)).map(
             saveTGAsset -> saveTGAsset.save(
                 new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGAudio.AUDIO_NODE_NAME)
             )
         ).ifPresent(tgAsset -> log.trace("Saved {} for the message at {}", tgAsset, targetJCRPath));
-        tgVoice().map(tgVoice -> new SaveTGAsset(tgVoice, resourceAccess)).flatMap(
+        tgVoice().map(tgVoice -> new SaveTGAsset(tgVoice, resourceAccess)).map(
             saveTGAsset -> saveTGAsset.save(
                 new TargetJCRPath(new ParentJCRPath(targetJCRPath), TGVoice.VOICE_NODE_NAME)
             )

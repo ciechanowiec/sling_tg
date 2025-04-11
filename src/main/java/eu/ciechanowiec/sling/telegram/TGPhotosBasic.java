@@ -5,6 +5,7 @@ import eu.ciechanowiec.sling.rocket.asset.Assets;
 import eu.ciechanowiec.sling.rocket.asset.FileMetadata;
 import eu.ciechanowiec.sling.rocket.asset.StagedAssetReal;
 import eu.ciechanowiec.sling.rocket.asset.StagedAssets;
+import eu.ciechanowiec.sling.rocket.asset.UsualFileAsAssetFile;
 import eu.ciechanowiec.sling.rocket.commons.ResourceAccess;
 import eu.ciechanowiec.sling.rocket.jcr.NodeProperties;
 import eu.ciechanowiec.sling.rocket.jcr.StagedNode;
@@ -72,7 +73,7 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         return photosRetrieved.stream()
             .<TGPhoto>map(
                 file -> new TGAssetBasic(
-                    () -> () -> Optional.of(file),
+                    () -> new TGFileFromAssetFile(new UsualFileAsAssetFile(file)),
                     () -> new TGMetadataBasic(new FileMetadata(file))
                 )
             )
@@ -90,7 +91,6 @@ class TGPhotosBasic implements TGAssets<TGPhoto> {
         log.trace("Saving {} to {}", this, targetJCRPath);
         targetJCRPath.assertThatJCRPathIsFree(resourceAccess);
         List<StagedNode<Asset>> stagedAssetsRaw = all().stream()
-            .filter(tgPhoto -> tgPhoto.tgFile().retrieve().isPresent())
             .map(
                 tgPhoto -> {
                     TGFile tgFile = tgPhoto.tgFile();
