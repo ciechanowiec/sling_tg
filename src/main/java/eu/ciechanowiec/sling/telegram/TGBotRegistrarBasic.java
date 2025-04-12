@@ -10,18 +10,28 @@ import eu.ciechanowiec.sling.telegram.api.TGIOGate;
 import eu.ciechanowiec.sling.telegram.api.TGInputGate;
 import eu.ciechanowiec.sling.telegram.api.TGOutputGate;
 import eu.ciechanowiec.sling.telegram.api.TGRootUpdatesReceiver;
+import eu.ciechanowiec.sling.telegram.api.WithTelegramUrl;
+import java.net.URI;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.DefaultGetUpdatesGenerator;
+import org.telegram.telegrambots.meta.TelegramUrl;
+import org.telegram.telegrambots.meta.api.methods.updates.GetUpdates;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -30,17 +40,19 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
  */
 @Component(
     service = {TGBotRegistrar.class, TGBotRegistrarBasic.class},
-    immediate = true
+    immediate = true,
+    configurationPolicy = ConfigurationPolicy.OPTIONAL
 )
 @Slf4j
 @ToString
 @ServiceDescription("Basic implementation of TGBotRegistrar")
-public class TGBotRegistrarBasic implements TGBotRegistrar {
+public class TGBotRegistrarBasic implements TGBotRegistrar, WithTelegramUrl {
 
     private final TelegramBotsLongPollingApplication tgBotsApplication;
     private final TGRootUpdatesReceiver tgRootUpdatesReceiver;
     @ToString.Exclude
     private final FullResourceAccess fullResourceAccess;
+    private final AtomicReference<TGBotRegistrarConfig> config;
 
     /**
      * Constructs an instance of this class.
@@ -48,18 +60,28 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
      * @param tgRootUpdatesReceiver {@link TGRootUpdatesReceiver} that will receive {@link Update}-s from Telegram as
      *                              first
      * @param fullResourceAccess    {@link ResourceAccess} that will be used to acquire access to resources
+     * @param config                {@link TGBotRegistrarConfig} that will be used to configure this service
      */
     @Activate
     public TGBotRegistrarBasic(
         @Reference(cardinality = ReferenceCardinality.MANDATORY)
         TGRootUpdatesReceiver tgRootUpdatesReceiver,
         @Reference(cardinality = ReferenceCardinality.MANDATORY)
-        FullResourceAccess fullResourceAccess
+        FullResourceAccess fullResourceAccess,
+        TGBotRegistrarConfig config
     ) {
         this.tgRootUpdatesReceiver = tgRootUpdatesReceiver;
         this.tgBotsApplication = new TelegramBotsLongPollingApplication();
         this.fullResourceAccess = fullResourceAccess;
+        this.config = new AtomicReference<>(config);
         log.info("Initialized {}", this);
+    }
+
+    @Modified
+    void modified(TGBotRegistrarConfig config) {
+        log.info("Reconfiguring {}", this);
+        this.config.set(config);
+        log.info("Reconfigured {}", this);
     }
 
     @Override
@@ -67,11 +89,11 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
         log.debug("Registering {}", tgBot);
         TGBotToken tgBotToken = tgBot.tgBotToken();
         String botTokenValue = tgBotToken.get();
-        TGOutputGate tgOutputGate = new TGOutputGateBasic(tgBot, tgBot);
+        TGOutputGate tgOutputGate = new TGOutputGateBasic(tgBot, this);
         TGInputGate tgInputGate = new TGInputGateBasic(tgRootUpdatesReceiver, tgBot, fullResourceAccess);
         try {
             BotSession botSession = tgBotsApplication.registerBot(
-                botTokenValue, tgBot::telegramUrl, new DefaultGetUpdatesGenerator(), tgInputGate
+                botTokenValue, this::telegramUrl, getUpdates(), tgInputGate
             );
             boolean isSessionRunning = botSession.isRunning();
             log.info("Registered {}. Is tgBot session running: {}", tgBot, isSessionRunning);
@@ -94,6 +116,21 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
             log.error(message, tgBot, exception);
             return Optional.empty();
         }
+    }
+
+    /**
+     * {@link DefaultGetUpdatesGenerator}, but with a custom {@link GetUpdates#getAllowedUpdates()}.
+     *
+     * @return {@link DefaultGetUpdatesGenerator}, but with a custom {@link GetUpdates#getAllowedUpdates()}
+     */
+    private Function<Integer, GetUpdates> getUpdates() {
+        return lastReceivedUpdate -> GetUpdates
+            .builder()
+            .limit(100)
+            .timeout(50)
+            .offset(lastReceivedUpdate + NumberUtils.INTEGER_ONE)
+            .allowedUpdates(List.of(config.get().allowed$_$updates()))
+            .build();
     }
 
     @Override
@@ -120,5 +157,13 @@ public class TGBotRegistrarBasic implements TGBotRegistrar {
         }
         boolean isRunning = tgBotsApplication.isRunning();
         log.info("Deactivated {}. Is TG application running? Answer: {}", this, isRunning);
+    }
+
+    @Override
+    public TelegramUrl telegramUrl() {
+        URI parsedTelegramUrl = URI.create(config.get().telegram_url());
+        return new TelegramUrl(
+            parsedTelegramUrl.getScheme(), parsedTelegramUrl.getHost(), parsedTelegramUrl.getPort(), false
+        );
     }
 }

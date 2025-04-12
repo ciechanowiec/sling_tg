@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
-import org.telegram.telegrambots.meta.TelegramUrl;
 
 /**
  * Configuration of a {@link TGBot}.
@@ -91,23 +90,4 @@ public @interface TGBotConfig {
         type = AttributeType.STRING
     )
     String jcr_home() default StringUtils.EMPTY;
-
-    /**
-     * {@link String} representation of the {@link TelegramUrl} with the address of the Telegram Bot API. Syntax:
-     * {@code <scheme>://<host>:<port>}. By default, this is {@link TelegramUrl#DEFAULT_URL}, i.e.
-     * <a href="https://api.telegram.org:443">https://api.telegram.org:443</a>.
-     *
-     * @return {@link String} representation of the {@link TelegramUrl} with the address of the Telegram Bot API.
-     * Syntax: {@code <scheme>://<host>:<port>}. By default, this is {@link TelegramUrl#DEFAULT_URL}, i.e.
-     * <a href="https://api.telegram.org:443">https://api.telegram.org:443</a>
-     */
-    @AttributeDefinition(
-        name = "Telegram URL",
-        description = "String representation of the TelegramUrl with the address of the Telegram Bot API. "
-            + "Syntax: <scheme>://<host>:<port>. By default, this is TelegramUrl#DEFAULT_URL, i.e. "
-            + "https://api.telegram.org:443.",
-        defaultValue = "https://api.telegram.org:443",
-        type = AttributeType.STRING
-    )
-    String telegram_url() default "https://api.telegram.org:443";
 }

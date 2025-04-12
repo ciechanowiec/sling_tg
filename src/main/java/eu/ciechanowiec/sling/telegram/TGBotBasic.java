@@ -27,7 +27,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.telegram.telegrambots.longpolling.BotSession;
-import org.telegram.telegrambots.meta.TelegramUrl;
 import org.telegram.telegrambots.meta.api.methods.commands.DeleteMyCommands;
 import org.telegram.telegrambots.meta.api.methods.description.SetMyDescription;
 import org.telegram.telegrambots.meta.api.methods.description.SetMyShortDescription;
@@ -241,10 +240,5 @@ public class TGBotBasic implements TGBot {
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public BotSession botSession() {
         return botSession;
-    }
-
-    @Override
-    public TelegramUrl telegramUrl() {
-        return config.telegramUrl();
     }
 }

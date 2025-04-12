@@ -2,7 +2,7 @@
  * Basic API implementations.
  */
 @Export
-@Version("2.1.0")
+@Version("3.0.0")
 package eu.ciechanowiec.sling.telegram;
 
 import org.osgi.annotation.bundle.Export;

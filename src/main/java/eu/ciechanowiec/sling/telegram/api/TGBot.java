@@ -5,7 +5,7 @@ import org.telegram.telegrambots.longpolling.BotSession;
 /**
  * Bot in Telegram.
  */
-public interface TGBot extends WithTGBotID, WithTGBotToken, WithTelegramUrl {
+public interface TGBot extends WithTGBotID, WithTGBotToken {
 
     /**
      * {@link TGBotHome} related with this {@link TGBot}.

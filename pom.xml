@@ -12,7 +12,7 @@
 
     <groupId>eu.ciechanowiec</groupId>
     <artifactId>sling.rocket.telegram</artifactId>
-    <version>2.1.4</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>Sling TG</name>
@@ -456,7 +456,7 @@ Import-Package: !lombok,*
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <failOnWarnings>true</failOnWarnings>
+                    <failOnWarnings>${fail-build-on-static-code-analysis-errors}</failOnWarnings>
                 </configuration>
                 <executions>
                     <execution>
